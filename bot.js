@@ -13,7 +13,8 @@ const map_times_endpoint_suffix = "/zones/typeindex/map/1/records/list"
 const course_times_endpoint_suffix1 = "/zones/typeindex/course/"
 const course_times_endpoint_suffix2 = "/records/list"
 const recent_record_endpoint = "/api/activity"
-
+const player_map_search_endpoint = "/api/search/playersAndMaps/"
+const player_info_endpoint = "/api/players/id/"
 
 client.on('ready', () => {
         console.log("Ready!");
@@ -87,6 +88,35 @@ var format_multi_record_listing = function(listing, list_time){
         return toreturn;
 }
 
+var handle_p = function(message, args){
+        if(args.length == 0){
+                message.reply("Not enough arguments");
+                return
+        }
+        Request(make_options(player_map_search_endpoint + args[0]), function(error, response, html){
+                players = JSON.parse(html)['players']
+                if(players.length == 0){
+                        message.reply("No players found");
+                        return;
+                }
+                Request(make_options(player_info_endpoint + players[0]['id'] + "/stats"), function(error, response, html){
+                        player = JSON.parse(html);
+                        message.reply(player['player_info']['name'] + "\n" + 
+                                "Rank " + player['class_rank_info']['3']['rank'] + " Soldier :: " + player['class_rank_info']['3']['points'] + " Points\n" + 
+                                "Rank " + player['class_rank_info']['4']['rank'] + " Demoman :: " + player['class_rank_info']['4']['points'] + " Points\n"+
+                                ((player['wr_stats']['map'] != undefined && player['wr_stats']['map']['count'] != undefined) ? ("Map WRs: " + player['wr_stats']['map']['count'] + "\n") : "") +
+                                ((player['wr_stats']['course'] != undefined && player['wr_stats']['course']['count'] != undefined) ? ("Course WRs: " + player['wr_stats']['course']['count'] + "\n") : "") +
+                                ((player['wr_stats']['bonus'] != undefined && player['wr_stats']['bonus']['count'] != undefined) ? ("Bonus WRs: " + player['wr_stats']['bonus']['count'] + "\n") : "") +
+                                ((player['top_stats']['map'] != undefined && player['top_stats']['map']['count'] != undefined) ? ("Map TTs: " + player['top_stats']['map']['count'] + "\n") : "") +
+                                ((player['top_stats']['course'] != undefined && player['top_stats']['course']['count'] != undefined) ? ("Course TTs: " + player['top_stats']['course']['count'] + "\n") : "") +
+                                ((player['top_stats']['bonus'] != undefined && player['top_stats']['bonus']['count'] != undefined) ? ("Bonus TTs: " + player['top_stats']['bonus']['count'] + "\n") : "") 
+                            )
+
+
+                })
+        })
+}
+
 
 var handle_dwr = function(message, args){
         if(args.length == 0){
@@ -136,7 +166,8 @@ var handlers = {
         "!swr":handle_swr,
         "!dwr":handle_dwr,
         "!rr":handle_rr,
-        "!mi":handle_mi
+        "!m":handle_mi,
+        "!p":handle_p
 }
 
 var maps = []
