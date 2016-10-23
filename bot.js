@@ -1,0 +1,153 @@
+const Discord = require('discord.js')
+const Request = require('request')
+const Cheerio = require('cheerio')
+const settings = require("./settings.js")
+
+const client = new Discord.Client();
+
+
+const base_url = "https://tempus.xyz"
+const map_list_endpoint = "/api/maps/detailedList"
+const map_times_endpoint_prefix = "/api/maps/name/"
+const map_times_endpoint_suffix = "/zones/typeindex/map/1/records/list"
+const course_times_endpoint_suffix1 = "/zones/typeindex/course/"
+const course_times_endpoint_suffix2 = "/records/list"
+const recent_record_endpoint = "/api/activity"
+
+
+client.on('ready', () => {
+        console.log("Ready!");
+})
+client.on('message', message => {
+        var content = message.content;
+        var handler;
+        handler = handlers[content.split(" ")[0]]
+        if(handler != undefined){
+             handler(message, content.split(" ").slice(1,9));
+        } 
+});
+
+var process_time = function(t){
+        t = Number(t);
+        var sec_num = parseInt(t, 10); // don't forget the second param
+        var hours   = Math.floor(sec_num / 3600);
+        var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+        var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+        if (hours   < 10) {hours   = "0"+hours;}
+        if (minutes < 10) {minutes = "0"+minutes;}
+        if (seconds < 10) {seconds = "0"+seconds;}
+        if (hours === "00")
+                return minutes+":"+seconds;
+        return hours+':'+minutes+':'+seconds;
+}
+
+var format_run = function(map, c, t, name, rank){
+        return map + " ("+((c === 3) ? "S" : "D") + ((rank===1) ? " WR" : " #" + rank) + ") :: " +  process_time(t) + " :: " + name;
+}
+
+var handle_rr = function(message, args){
+        var type = "map_wrs";
+        if(args[0] === "bonus" || args[0] === "b"){
+                type = "bonus_wrs";
+        }else if (args[0] === "course" || args[0] === "c"){
+                type = "course_wrs";
+        }else if (args[0] == "tt"){
+                type = "map_tops";
+        }
+        Request(make_options(recent_record_endpoint), function(error, response, html){
+                r = JSON.parse(html);
+                listing = r["map_wrs"]; // Fix this to include all times later
+                message.reply(format_multi_record_listing(listing.slice(0, 6), true));
+        });
+}
+
+var handle_mi = function(message, args){
+        if(args.length == 0){
+                message.reply("Not enough arguments");
+                return
+        }
+        map = parse_map_name(args[0])
+        if(map == undefined){
+                message.reply("Invalid map name");
+                return
+        }
+        message.reply(map['name'] + " :: S - T" + map['tier_info']['3'] + ", D - T" + map['tier_info']['4'] + " :: " + ((map['authors'].length == 1) ? map['authors'][0]['name'] : "Multiple Authors"))
+}
+
+var format_multi_record_listing = function(listing, list_time){
+        toreturn = "\n";
+        listing.forEach(function(v, i, l){
+            toreturn += format_run(v['map_info']['name'], v['record_info']['class'], v['record_info']['duration'], v['player_info']['name'], 1);
+            if(list_time){
+                toreturn += " :: " + process_time(new Date().getTime() / 1000 - v['record_info']['date']) + " ago";
+            }
+            toreturn += "\n";
+        }); 
+        return toreturn;
+}
+
+
+var handle_dwr = function(message, args){
+        if(args.length == 0){
+                message.reply("Not enough arguments");
+                return
+        }
+        map = parse_map_name(args[0])
+        if(map == undefined){
+                message.reply("Invalid map name");
+                return
+        }
+        Request(make_options(map_times_endpoint_prefix + map['name'] + map_times_endpoint_suffix), function(error, response, html){
+                r = JSON.parse(html);
+                message.reply(format_run(map['name'], 4, r['results']['demoman'][0]['duration'], r['results']['demoman'][0]['name'], 1));
+        });
+}
+
+
+var handle_swr = function(message, args){
+        if(args.length == 0){
+                message.reply("Not enough arguments");
+                return
+        }
+        map = parse_map_name(args[0])
+        if(map == undefined){
+                message.reply("Invalid map name");
+                return
+        }
+        Request(make_options(map_times_endpoint_prefix + map['name'] + map_times_endpoint_suffix), function(error, response, html){
+                r = JSON.parse(html);
+                message.reply(format_run(map['name'], 3,  r['results']['soldier'][0]['duration'], r['results']['soldier'][0]['name'], 1));
+        });
+}
+
+var parse_map_name = function(text){
+        var map;
+        maps.forEach(function(val, i, a){
+                if(val['name'].includes(text)){
+                        map = val;         
+                }
+        });
+        return map;
+}
+
+
+var handlers = {
+        "!swr":handle_swr,
+        "!dwr":handle_dwr,
+        "!rr":handle_rr,
+        "!mi":handle_mi
+}
+
+var maps = []
+
+var make_options = function(endpoint){
+        return {url:base_url+endpoint, method:'GET', headers:{'Accept':'application/json'}}
+}
+
+
+Request(make_options(map_list_endpoint), function(error, response, html){
+    maps = JSON.parse(html);
+});
+
+client.login(settings.email, settings.password)
