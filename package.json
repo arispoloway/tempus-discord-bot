@@ -1,5 +1,6 @@
 {
         "name":"tempus-discord-bot",
+        "main":"./bot.js",
         "dependencies":{
                 "request":"2.75.0",
                 "cheerio":"0.22.0",
