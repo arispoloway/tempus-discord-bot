@@ -88,12 +88,53 @@ var format_multi_record_listing = function(listing, list_time){
         return toreturn;
 }
 
+var handle_srank = function(message, args){
+        if(args.length == 0){
+                message.reply("Not enough arguments");
+                return
+        }
+        Request(make_options(player_map_search_endpoint + args.join(" ")), function(error, response, html){
+                players = JSON.parse(html)['players']
+                if(players.length == 0){
+                        message.reply("No players found");
+                        return;
+                }
+                Request(make_options(player_info_endpoint + players[0]['id'] + "/stats"), function(error, response, html){
+                        player = JSON.parse(html);
+                        message.reply(player['player_info']['name'] + "\n" + 
+                                "Rank " + player['class_rank_info']['3']['rank'] + " Soldier :: " + player['class_rank_info']['3']['points'] + " Points\n" 
+                            )
+                })
+        })
+
+}
+var handle_drank = function(message, args){
+        if(args.length == 0){
+                message.reply("Not enough arguments");
+                return
+        }
+        Request(make_options(player_map_search_endpoint + args.join(" ")), function(error, response, html){
+                players = JSON.parse(html)['players']
+                if(players.length == 0){
+                        message.reply("No players found");
+                        return;
+                }
+                Request(make_options(player_info_endpoint + players[0]['id'] + "/stats"), function(error, response, html){
+                        player = JSON.parse(html);
+                        message.reply(player['player_info']['name'] + "\n" + 
+                                "Rank " + player['class_rank_info']['4']['rank'] + " Demoman :: " + player['class_rank_info']['4']['points'] + " Points\n"
+                            )
+                })
+        })
+
+}
+
 var handle_p = function(message, args){
         if(args.length == 0){
                 message.reply("Not enough arguments");
                 return
         }
-        Request(make_options(player_map_search_endpoint + args[0]), function(error, response, html){
+        Request(make_options(player_map_search_endpoint + args.join(" ")), function(error, response, html){
                 players = JSON.parse(html)['players']
                 if(players.length == 0){
                         message.reply("No players found");
@@ -152,13 +193,16 @@ var handle_swr = function(message, args){
 }
 
 var parse_map_name = function(text){
-        var map;
-        maps.forEach(function(val, i, a){
-                if(val['name'].includes(text)){
-                        map = val;         
+        for(var i = 0; i < maps.length; i++){
+                if(maps[i]['name'].split("_")[1] === text){
+                        return maps[i];
                 }
-        });
-        return map;
+        }
+        for(var i = 0; i < maps.length; i++){
+                if(maps[i]['name'].includes(text)){
+                        return maps[i];
+                }
+        }
 }
 
 
@@ -167,7 +211,9 @@ var handlers = {
         "!dwr":handle_dwr,
         "!rr":handle_rr,
         "!m":handle_mi,
-        "!p":handle_p
+        "!p":handle_p,
+        "!srank":handle_srank,
+        "!drank":handle_drank
 }
 
 var maps = []
