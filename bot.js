@@ -227,4 +227,4 @@ Request(make_options(map_list_endpoint), function(error, response, html){
     maps = JSON.parse(html);
 });
 
-client.login(settings.email, settings.password)
+client.login(settings.token);
