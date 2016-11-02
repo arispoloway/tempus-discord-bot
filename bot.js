@@ -47,6 +47,17 @@ var format_run = function(map, c, t, name, rank){
         return map + " ("+((c === 3) ? "S" : "D") + ((rank===1) ? " WR" : " #" + rank) + ") :: " +  process_time(t) + " :: " + name;
 }
 
+var handle_rrb = function(message, args){
+        handle_rr(message, ["b"]);
+}
+
+var handle_rrtt = function(message, args){
+        handle_rr(message, ["tt"]);
+}
+
+var handle_rrc = function(message, args){
+        handle_rr(message, ["c"]);
+}
 var handle_rr = function(message, args){
         var type = "map_wrs";
         if(args[0] === "bonus" || args[0] === "b"){
@@ -58,7 +69,7 @@ var handle_rr = function(message, args){
         }
         Request(make_options(recent_record_endpoint), function(error, response, html){
                 r = JSON.parse(html);
-                listing = r["map_wrs"]; // Fix this to include all times later
+                listing = r[type];
                 message.reply(format_multi_record_listing(listing.slice(0, 6), true));
         });
 }
@@ -76,10 +87,10 @@ var handle_mi = function(message, args){
         message.reply(map['name'] + " :: S - T" + map['tier_info']['3'] + ", D - T" + map['tier_info']['4'] + " :: " + ((map['authors'].length == 1) ? map['authors'][0]['name'] : "Multiple Authors"))
 }
 
-var format_multi_record_listing = function(listing, list_time){
+var format_multi_record_listing = function(listing, list_time ){
         toreturn = "\n";
         listing.forEach(function(v, i, l){
-            toreturn += format_run(v['map_info']['name'], v['record_info']['class'], v['record_info']['duration'], v['player_info']['name'], 1);
+            toreturn += format_run(v['map_info']['name'], v['record_info']['class'], v['record_info']['duration'], v['player_info']['name'], ((v['rank'] === undefined) ? 1 : v['rank']));
             if(list_time){
                 toreturn += " :: " + process_time(new Date().getTime() / 1000 - v['record_info']['date']) + " ago";
             }
@@ -171,6 +182,10 @@ var handle_dwr = function(message, args){
         }
         Request(make_options(map_times_endpoint_prefix + map['name'] + map_times_endpoint_suffix), function(error, response, html){
                 r = JSON.parse(html);
+                if(r['results']['demoman'][0] === undefined){
+                        message.reply("No runs");
+                        return;
+                }
                 message.reply(format_run(map['name'], 4, r['results']['demoman'][0]['duration'], r['results']['demoman'][0]['name'], 1));
         });
 }
@@ -188,6 +203,10 @@ var handle_swr = function(message, args){
         }
         Request(make_options(map_times_endpoint_prefix + map['name'] + map_times_endpoint_suffix), function(error, response, html){
                 r = JSON.parse(html);
+                if(r['results']['soldier'][0] === undefined){
+                        message.reply("No runs");
+                        return;
+                }
                 message.reply(format_run(map['name'], 3,  r['results']['soldier'][0]['duration'], r['results']['soldier'][0]['name'], 1));
         });
 }
@@ -210,6 +229,9 @@ var handlers = {
         "!swr":handle_swr,
         "!dwr":handle_dwr,
         "!rr":handle_rr,
+        "!rrb":handle_rrb,
+        "!rrc":handle_rrc,
+        "!rrtt":handle_rrtt,
         "!m":handle_mi,
         "!p":handle_p,
         "!srank":handle_srank,
