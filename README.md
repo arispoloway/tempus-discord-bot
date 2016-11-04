@@ -17,7 +17,7 @@ The source code for a discord bot that recognizes commands from the TF2 Tempus J
 * !p <player-name>
 * !srank <player-name>
 * !drank <player-name>
-* 
+
 ### Getting the bot on your server
 Click this [link](https://discordapp.com/oauth2/authorize?client_id=240944061458939904&scope=bot&permissions=0) to get the bot on your server
 
