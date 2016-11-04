@@ -11,6 +11,8 @@ const map_list_endpoint = "/api/maps/detailedList"
 const map_times_endpoint_prefix = "/api/maps/name/"
 const map_times_endpoint_suffix = "/zones/typeindex/map/1/records/list"
 const course_times_endpoint_suffix1 = "/zones/typeindex/course/"
+const bonus_times_endpoint_suffix1  = "/zones/typeindex/bonus/"
+const bonus_times_endpoint_suffix2 = "/records/list"
 const course_times_endpoint_suffix2 = "/records/list"
 const recent_record_endpoint = "/api/activity"
 const player_map_search_endpoint = "/api/search/playersAndMaps/"
@@ -43,8 +45,11 @@ var process_time = function(t){
         return hours+':'+minutes+':'+seconds;
 }
 
-var format_run = function(map, c, t, name, rank){
-        return map + " ("+((c === 3) ? "S" : "D") + ((rank===1) ? " WR" : " #" + rank) + ") :: " +  process_time(t) + " :: " + name;
+var format_run = function(map, c, t, name, rank, bonus, course){
+        return map + " " + 
+                ((bonus != 0) ? "B" + String(bonus) + " " : "") + 
+                ((course != 0) ? "C" + String(course) + " ": "") + 
+                "("+((c === 3) ? "S" : "D") + ((rank===1) ? " WR" : " #" + rank) + ") :: " +  process_time(t) + " :: " + name;
 }
 
 var handle_rrb = function(message, args){
@@ -90,7 +95,10 @@ var handle_mi = function(message, args){
 var format_multi_record_listing = function(listing, list_time ){
         toreturn = "\n";
         listing.forEach(function(v, i, l){
-            toreturn += format_run(v['map_info']['name'], v['record_info']['class'], v['record_info']['duration'], v['player_info']['name'], ((v['rank'] === undefined) ? 1 : v['rank']));
+            toreturn += format_run(v['map_info']['name'], v['record_info']['class'], v['record_info']['duration'], v['player_info']['name'], ((v['rank'] === undefined) ? 1 : v['rank']),
+                ((v['zone_info']['type'] == 'bonus') ?  parseInt(v['zone_info']['zoneindex']) : 0),
+                ((v['zone_info']['type'] == 'course') ?  parseInt(v['zone_info']['zoneindex']) : 0) 
+            );
             if(list_time){
                 toreturn += " :: " + process_time(new Date().getTime() / 1000 - v['record_info']['date']) + " ago";
             }
@@ -186,7 +194,7 @@ var handle_dwr = function(message, args){
                         message.reply("No runs");
                         return;
                 }
-                message.reply(format_run(map['name'], 4, r['results']['demoman'][0]['duration'], r['results']['demoman'][0]['name'], 1));
+                message.reply(format_run(map['name'], 4, r['results']['demoman'][0]['duration'], r['results']['demoman'][0]['name'], 1, 0, 0));
         });
 }
 
@@ -207,7 +215,107 @@ var handle_swr = function(message, args){
                         message.reply("No runs");
                         return;
                 }
-                message.reply(format_run(map['name'], 3,  r['results']['soldier'][0]['duration'], r['results']['soldier'][0]['name'], 1));
+                message.reply(format_run(map['name'], 3,  r['results']['soldier'][0]['duration'], r['results']['soldier'][0]['name'], 1, 0, 0));
+        });
+}
+
+var handle_swrb = function(message, args){
+        if(args.length < 2){
+                message.reply("Not enough arguments");
+                return
+        }
+        map = parse_map_name(args[0])
+        if(map == undefined){
+                message.reply("Invalid map name");
+                return
+        }
+        bonus_num = parseInt(args[1]);
+        if(isNaN(bonus_num) || !(bonus_num <= map['zone_counts']['bonus'])){
+                message.reply("Invalid bonus number");
+                return
+        }
+        Request(make_options(map_times_endpoint_prefix + map['name'] + bonus_times_endpoint_suffix1 + args[1] + bonus_times_endpoint_suffix2), function(error, response, html){
+                r = JSON.parse(html);
+                if(r['results']['soldier'][0] === undefined){
+                        message.reply("No runs");
+                        return;
+                }
+                message.reply(format_run(map['name'], 3,  r['results']['soldier'][0]['duration'], r['results']['soldier'][0]['name'], 1, bonus_num, 0));
+        });
+}
+
+var handle_dwrb = function(message, args){
+        if(args.length < 2){
+                message.reply("Not enough arguments");
+                return
+        }
+        map = parse_map_name(args[0])
+        if(map == undefined){
+                message.reply("Invalid map name");
+                return
+        }
+        bonus_num = parseInt(args[1]);
+        if(isNaN(bonus_num) || !(bonus_num <= map['zone_counts']['bonus'])){
+                message.reply("Invalid bonus number");
+                return
+        }
+        Request(make_options(map_times_endpoint_prefix + map['name'] + bonus_times_endpoint_suffix1 + args[1] + bonus_times_endpoint_suffix2), function(error, response, html){
+                r = JSON.parse(html);
+                if(r['results']['demoman'][0] === undefined){
+                        message.reply("No runs");
+                        return;
+                }
+                message.reply(format_run(map['name'], 4,  r['results']['demoman'][0]['duration'], r['results']['demoman'][0]['name'], 1, bonus_num, 0));
+        });
+}
+
+var handle_swrc = function(message, args){
+        if(args.length < 2){
+                message.reply("Not enough arguments");
+                return
+        }
+        map = parse_map_name(args[0])
+        if(map == undefined){
+                message.reply("Invalid map name");
+                return
+        }
+        course_num = parseInt(args[1]);
+        if(isNaN(course_num) || !(course_num <= map['zone_counts']['course'])){
+                message.reply("Invalid course number");
+                return
+        }
+        Request(make_options(map_times_endpoint_prefix + map['name'] + course_times_endpoint_suffix1 + args[1] + course_times_endpoint_suffix2), function(error, response, html){
+                r = JSON.parse(html);
+                if(r['results']['soldier'][0] === undefined){
+                        message.reply("No runs");
+                        return;
+                }
+                message.reply(format_run(map['name'], 3,  r['results']['soldier'][0]['duration'], r['results']['soldier'][0]['name'], 1, 0, course_num));
+        });
+}
+
+var handle_dwrc = function(message, args){
+        if(args.length < 2){
+                message.reply("Not enough arguments");
+                return
+        }
+        map = parse_map_name(args[0])
+        if(map == undefined){
+                message.reply("Invalid map name");
+                return
+        }
+        course_num = parseInt(args[1]);
+        if(isNaN(course_num) || !(course_num <= map['zone_counts']['course'])){
+                message.reply("Invalid course number");
+                return
+        }
+        Request(make_options(map_times_endpoint_prefix + map['name'] + course_times_endpoint_suffix1 + args[1] + course_times_endpoint_suffix2), function(error, response, html){
+                r = JSON.parse(html);
+                if(r['results']['demoman'][0] === undefined){
+                        message.reply("No runs");
+                        return;
+                }
+                message.reply(format_run(map['name'], 4,  r['results']['demoman'][0]['duration'], r['results']['demoman'][0]['name'], 1, 0, course_num));
         });
 }
 
@@ -228,6 +336,10 @@ var parse_map_name = function(text){
 var handlers = {
         "!swr":handle_swr,
         "!dwr":handle_dwr,
+        "!swrb":handle_swrb,
+        "!dwrb":handle_dwrb,
+        "!swrc":handle_swrc,
+        "!dwrc":handle_dwrc,
         "!rr":handle_rr,
         "!rrb":handle_rrb,
         "!rrc":handle_rrc,
