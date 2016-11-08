@@ -21,6 +21,7 @@ const player_info_endpoint = "/api/players/id/"
 client.on('ready', () => {
         console.log("Ready!");
 })
+
 client.on('message', message => {
         var content = message.content;
         var handler;
@@ -177,7 +178,54 @@ var handle_p = function(message, args){
         })
 }
 
-
+var handle_stime = function(message, args){
+        if(args.length < 2){
+                message.reply("Not enough arguments");
+                return
+        }
+        map = parse_map_name(args[0])
+        if(map == undefined){
+                message.reply("Invalid map name");
+                return
+        }
+        time = parseInt(args[1]);
+        if(time == NaN || time > 10 || time < 1){
+                message.reply("Invalid run number");
+                return
+        }
+        Request(make_options(map_times_endpoint_prefix + map['name'] + map_times_endpoint_suffix), function(error, response, html){
+                r = JSON.parse(html);
+                if(r['results']['soldier'][time-1] === undefined){
+                        message.reply("No runs");
+                        return;
+                }
+                message.reply(format_run(map['name'], 3, r['results']['soldier'][time-1]['duration'], r['results']['soldier'][time-1]['name'], time, 0, 0));
+        });
+}
+var handle_dtime = function(message, args){
+        if(args.length < 2){
+                message.reply("Not enough arguments");
+                return
+        }
+        map = parse_map_name(args[0])
+        if(map == undefined){
+                message.reply("Invalid map name");
+                return
+        }
+        time = parseInt(args[1]);
+        if(time == NaN || time > 10 || time < 1){
+                message.reply("Invalid run number");
+                return
+        }
+        Request(make_options(map_times_endpoint_prefix + map['name'] + map_times_endpoint_suffix), function(error, response, html){
+                r = JSON.parse(html);
+                if(r['results']['demoman'][time-1] === undefined){
+                        message.reply("No runs");
+                        return;
+                }
+                message.reply(format_run(map['name'], 4, r['results']['demoman'][time-1]['duration'], r['results']['demoman'][time-1]['name'], time, 0, 0));
+        });
+}
 var handle_dwr = function(message, args){
         if(args.length == 0){
                 message.reply("Not enough arguments");
@@ -347,7 +395,9 @@ var handlers = {
         "!m":handle_mi,
         "!p":handle_p,
         "!srank":handle_srank,
-        "!drank":handle_drank
+        "!drank":handle_drank,
+        "!stime":handle_stime,
+        "!dtime":handle_dtime
 }
 
 var maps = []
