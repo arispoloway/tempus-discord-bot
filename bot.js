@@ -380,6 +380,12 @@ var parse_map_name = function(text){
         }
 }
 
+var update_maps = function(){
+    Request(make_options(map_list_endpoint), function(error, response, html){
+        maps = JSON.parse(html);
+        console.log("Maps updated");
+    });
+}
 
 var handlers = {
         "!swr":handle_swr,
@@ -397,7 +403,8 @@ var handlers = {
         "!srank":handle_srank,
         "!drank":handle_drank,
         "!stime":handle_stime,
-        "!dtime":handle_dtime
+        "!dtime":handle_dtime,
+        "!updatemaps":update_maps
 }
 
 var maps = []
@@ -407,8 +414,9 @@ var make_options = function(endpoint){
 }
 
 
-Request(make_options(map_list_endpoint), function(error, response, html){
-    maps = JSON.parse(html);
-});
+update_maps();
+
+update_interval = 1000 * 60 * 60 * 6 // every 6 hours
+setInterval(update_maps, update_interval);
 
 client.login(settings.token);
