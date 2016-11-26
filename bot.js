@@ -1,9 +1,14 @@
 const Discord = require('discord.js')
 const Request = require('request')
 const Cheerio = require('cheerio')
+const Steam   = require('steam-server-status')
 const settings = require("./settings.js")
 
 const client = new Discord.Client();
+
+
+
+
 
 
 const base_url = "https://tempus.xyz"
@@ -380,6 +385,57 @@ var parse_map_name = function(text){
         }
 }
 
+var parse_server_name = function(text){
+        for(var i = 0; i < settings.servers.length; i++){
+                if(settings.servers[i].names.includes(text)){
+                        return settings.servers[i]
+                }
+        }
+}
+var parse_server_group = function(text){
+        for(var i = 0; i < settings.server_groups.length; i++){
+                if(settings.server_groups[i].name === text){
+                        var servers = []
+                        for(var j = 0; j < settings.server_groups[i].servers.length; j++){
+                                servers.push(parse_server_name(settings.server_groups[i].servers[j]));
+                        }
+                        return servers;
+                }
+        }
+}
+
+
+var handle_server_status = function(message, args){
+        if(args.length == 0){
+                message.reply("Invalid args");
+                return
+        }         
+        args.forEach(function(element){
+                var server = parse_server_name(element);
+                if(!server){
+                        servers = parse_server_group(element);
+                        if(!servers){
+                                return
+                        }
+                }else{
+                        servers = [server]
+                }
+                servers.forEach(function(server){
+                        Steam.getServerStatus(server.ip, server.port, function(r){
+                                if(r.error){
+                                        console.error(r.error);
+                                        message.reply("An error occurred");
+                                }else{
+                                        message.reply(r.map + " | " + r.serverName + " " + r.connectUrl);
+                                } 
+                        });
+
+                });
+
+        });
+        
+}
+
 var update_maps = function(){
     Request(make_options(map_list_endpoint), function(error, response, html){
         maps = JSON.parse(html);
@@ -404,8 +460,11 @@ var handlers = {
         "!drank":handle_drank,
         "!stime":handle_stime,
         "!dtime":handle_dtime,
-        "!updatemaps":update_maps
+        "!updatemaps":update_maps,
+        "!si":handle_server_status
 }
+
+
 
 var maps = []
 
