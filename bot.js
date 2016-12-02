@@ -146,7 +146,6 @@ var handle_srank = function(message, args){
         }
 }
 
-
 var handle_drank = function(message, args){
         if(args.length == 0){
                 message.reply("Not enough arguments");
@@ -450,7 +449,7 @@ var handle_server_status = function(message, args){
                                         console.error(r.error);
                                         message.reply("An error occurred");
                                 }else{
-                                        message.reply(r.map + " | " + r.serverName + " " + r.connectUrl);
+                                        message.reply(r.map + " (" + r.numberOfPlayers + "/" + r.maxNumberOfPlayers + ") | " + r.serverName + " " + r.connectUrl);
                                 } 
                         });
 
