@@ -6,8 +6,7 @@ const settings = require("./settings.js")
 
 const client = new Discord.Client();
 
-
-
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 
 
