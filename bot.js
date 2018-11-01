@@ -10,7 +10,9 @@ setInterval(utils.update_maps, update_interval);
 
 function discord_send(msg) {
     return (reply) => {
-        msg.reply('```' + reply + '```');
+        const embed = new Discord.RichEmbed();
+        embed.setDescription(reply);
+        msg.channel.send(embed);
     }
 }
 
