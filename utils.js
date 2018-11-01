@@ -2,10 +2,6 @@ const tempus = require('tempus-api');
 
 var maps = [];
 
-function send(msg, reply) {
-    msg.reply('```' + reply + '```');
-}
-
 function process_time(t) {
     t = Number(t);
     var sec_num = parseInt(t, 10); // don't forget the second param
@@ -63,7 +59,6 @@ async function update_maps() {
 }
 
 Object.assign(module.exports, {
-    send,
     process_time,
     format_run,
     format_multi_record_listing,

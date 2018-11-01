@@ -88,20 +88,19 @@ async function handle_p(p) {
 }
 
 
-async function handle_message(message) {
-    let content = message.content;
+async function handle_message(reply, content) {
     var handler;
     handler = handlers[content.split(" ")[0]];
     if (handler != undefined) {
         try{
             let r = await handler(content.split(" ").slice(1, 9));
             if (!r) {
-                utils.send(message, "Invalid arguments");
+                reply("Invalid arguments");
             } else {
-                utils.send(message, r);
+                reply(r);
             }
         } catch (e) {
-            utils.send(message, "An error occurred");
+            reply("An error occurred");
         }
     }
 }
