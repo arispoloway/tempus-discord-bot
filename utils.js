@@ -3,7 +3,7 @@ const tempus = require('tempus-api');
 var maps = [];
 
 function send(msg, reply) {
-    msg.reply(reply);
+    msg.reply('```' + reply + '```');
 }
 
 function process_time(t) {

@@ -18,6 +18,6 @@
   "homepage": "https://github.com/arispoloway/tempus-discord-bot#readme",
   "dependencies": {
     "discord.js": "^11.4.2",
-    "tempus-api": "0.0.2"
+    "tempus-api": "0.0.3"
   }
 }

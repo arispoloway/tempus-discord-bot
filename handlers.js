@@ -121,6 +121,32 @@ async function handle_dtime(message, args) {
     }
 }
 
+async function handle_p(message, args) {
+    let p = argparse.parse_args(args, argparse.any());
+    if (!p) {
+        utils.send(message, "Invalid arguments");
+        return;
+    }
+
+    try {
+        var r = await tempus.searchPlayer(p);
+        let player = await r.toPlayerStats();
+
+        let msg = ("\n" + player.name + "\n" + 
+            "Rank " + player.class_rank_info.soldier.rank + " Soldier :: " + player.class_rank_info.soldier.points + " Points\n" + 
+            "Rank " + player.class_rank_info.demoman.rank + " Demoman :: " + player.class_rank_info.demoman.points + " Points\n"+
+            (player.wr_stats.map ? ("Map WRs: " + player.wr_stats.map.count + "\n") : "") +
+            (player.wr_stats.course ? ("Course WRs: " + player.wr_stats.course.count + "\n") : "") +
+            (player.wr_stats.bonus ? ("Bonus WRs: " + player.wr_stats.bonus.count + "\n") : "") +
+            (player.top_stats.map ? ("Map TTs: " + player.top_stats.map.count + "\n") : "") +
+            (player.top_stats.course ? ("Course TTs: " + player.top_stats.course.count + "\n") : "") +
+            (player.top_stats.bonus ? ("Bonus TTs: " + player.top_stats.bonus.count + "\n") : ""));
+        utils.send(message, msg);
+    } catch (e) {
+        utils.send(message, "Invalid player");
+    }
+}
+
 
 async function handle_message(message) {
     let content = message.content;
@@ -140,6 +166,7 @@ const handlers = {
     "!dwrb": handle_dwrb,
     "!stime": handle_stime,
     "!dtime": handle_dtime,
+    "!p": handle_p,
 }
 
 Object.assign(module.exports, {

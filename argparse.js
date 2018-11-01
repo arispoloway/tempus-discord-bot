@@ -26,6 +26,7 @@ function any() {
 
 function parse_args(args) {
     try {
+        if (args.length != (arguments.length - 1)) return;
         let r = [];
         for (let i = 0; i < args.length; i++){
             let x = arguments[i+1](args[i]);
