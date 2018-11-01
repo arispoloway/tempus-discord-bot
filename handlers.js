@@ -3,133 +3,85 @@ const utils = require('./utils');
 const argparse = require('./argparse');
 
 
-async function handle_swr(message, args) {
-    let parsed = argparse.parse_args(args, argparse.map());
-    if (!parsed) {
-        utils.send(message, "Invalid arguments");
-        return;
-    }
-
-    var r = await tempus.mapWR(parsed[0], 's');
-    utils.send(message, utils.format_run(parsed[0], 's', r.duration, r.player.name));
+async function handle_swr(args) {
+    var r = await tempus.mapWR(args, 's');
+    return utils.format_run(args, 's', r.duration, r.player.name);
 }
 
-async function handle_dwr(message, args) {
-    let parsed = argparse.parse_args(args, argparse.map());
-    if (!parsed) {
-        utils.send(message, "Invalid arguments");
-        return;
-    }
-
-    var r = await tempus.mapWR(parsed[0], 'd');
-    utils.send(message, utils.format_run(parsed[0], 'd', r.duration, r.player.name));
+async function handle_dwr(args) {
+    var r = await tempus.mapWR(args, 'd');
+    return utils.format_run(args, 'd', r.duration, r.player.name);
 }
 
-async function handle_swrc(message, args) {
-    let p = argparse.parse_map_num(args);
-    if (!p) {
-        utils.send(message, "Invalid arguments");
-        return;
-    }
-    let {map, num} = p;
+async function handle_swrc(args) {
+    let {map, num} = args;
 
     try {
         var r = await tempus.courseWR(map, num, 's');
-        utils.send(message, utils.format_run(map, 's', r.duration, r.player.name, 0, 0, num));
+        return utils.format_run(map, 's', r.duration, r.player.name, 0, 0, num);
     } catch (e) {
-        utils.send(message, "Invalid Course Number");
+        return "Invalid Course Number";
     }
 }
 
-async function handle_dwrc(message, args) {
-    let p = argparse.parse_map_num(args);
-    if (!p) {
-        utils.send(message, "Invalid arguments");
-        return;
-    }
-    let {map, num} = p;
+async function handle_dwrc(args) {
+    let {map, num} = args;
 
     try {
         var r = await tempus.courseWR(map, num, 'd');
-        utils.send(message, utils.format_run(map, 'd', r.duration, r.player.name, 0, 0, num));
+        return utils.format_run(map, 'd', r.duration, r.player.name, 0, 0, num);
     } catch (e) {
-        utils.send(message, "Invalid Course Number");
+        return "Invalid Course Number";
     }
 }
 
-async function handle_swrb(message, args) {
-    let p = argparse.parse_map_num(args);
-    if (!p) {
-        utils.send(message, "Invalid arguments");
-        return;
-    }
-    let {map, num} = p;
+async function handle_swrb(args) {
+    let {map, num} = args;
 
     try {
         var r = await tempus.bonusWR(map, num, 's');
-        utils.send(message, utils.format_run(map, 's', r.duration, r.player.name, 0, num));
+        return utils.format_run(map, 's', r.duration, r.player.name, 0, num);
     } catch (e) {
-        utils.send(message, "Invalid Bonus Number");
+        return "Invalid Bonus Number";
     }
 }
 
-async function handle_dwrb(message, args) {
-    let p = argparse.parse_map_num(args);
-    if (!p) {
-        utils.send(message, "Invalid arguments");
-        return;
-    }
-    let {map, num} = p;
+async function handle_dwrb(args) {
+    let {map, num} = args;
 
     try {
         var r = await tempus.bonusWR(map, num, 'd');
-        utils.send(message, utils.format_run(map, 'd', r.duration, r.player.name, 0, num));
+        return utils.format_run(map, 'd', r.duration, r.player.name, 0, num);
     } catch (e) {
-        utils.send(message, "Invalid Bonus Number");
+        return "Invalid Bonus Number";
     }
 }
 
-async function handle_stime(message, args) {
-    let p = argparse.parse_map_num(args);
-    if (!p) {
-        utils.send(message, "Invalid arguments");
-        return;
-    }
-    let {map, num} = p;
+async function handle_stime(args) {
+    let {map, num} = args;
 
     try {
         var r = await tempus.mapTime(map, 's', num);
-        utils.send(message, utils.format_run(map, 's', r.duration, r.player.name, num));
+        return utils.format_run(map, 's', r.duration, r.player.name, num);
     } catch (e) {
-        utils.send(message, "Invalid Run Number");
+        return "Invalid Run Number";
     }
 }
 
-async function handle_dtime(message, args) {
-    let p = argparse.parse_map_num(args);
-    if (!p) {
-        utils.send(message, "Invalid arguments");
-        return;
-    }
-    let {map, num} = p;
+async function handle_dtime(args) {
+    let {map, num} = args;
 
     try {
         var r = await tempus.mapTime(map, 'd', num);
-        utils.send(message, utils.format_run(map, 'd', r.duration, r.player.name, num));
+        return utils.format_run(map, 'd', r.duration, r.player.name, num);
     } catch (e) {
-        utils.send(message, "Invalid Run Number");
+        return "Invalid Run Number";
     }
 }
 
-async function handle_p(message, args) {
-    let p = argparse.parse_args(args, argparse.any());
-    if (!p) {
-        utils.send(message, "Invalid arguments");
-        return;
-    }
-
+async function handle_p(args) {
     try {
-        var r = await tempus.searchPlayer(p);
+        var r = await tempus.searchPlayer(args[0]);
         let player = await r.toPlayerStats();
 
         let msg = ("\n" + player.name + "\n" + 
@@ -141,9 +93,9 @@ async function handle_p(message, args) {
             (player.top_stats.map ? ("Map TTs: " + player.top_stats.map.count + "\n") : "") +
             (player.top_stats.course ? ("Course TTs: " + player.top_stats.course.count + "\n") : "") +
             (player.top_stats.bonus ? ("Bonus TTs: " + player.top_stats.bonus.count + "\n") : ""));
-        utils.send(message, msg);
+        return msg;
     } catch (e) {
-        utils.send(message, "Invalid player");
+        return "Invalid player";
     }
 }
 
@@ -153,20 +105,25 @@ async function handle_message(message) {
     var handler;
     handler = handlers[content.split(" ")[0]];
     if (handler != undefined) {
-        handler(message, content.split(" ").slice(1, 9));
+        let r = await handler(content.split(" ").slice(1, 9));
+        if (!r) {
+            utils.send(message, "Invalid arguments");
+        } else {
+            utils.send(message, r);
+        }
     }
 }
 
 const handlers = {
-    "!swr": handle_swr,
-    "!dwr": handle_dwr,
-    "!swrc": handle_swrc,
-    "!dwrc": handle_dwrc,
-    "!swrb": handle_swrb,
-    "!dwrb": handle_dwrb,
-    "!stime": handle_stime,
-    "!dtime": handle_dtime,
-    "!p": handle_p,
+    "!swr": argparse.validate(handle_swr, argparse.map()),
+    "!dwr": argparse.validate(handle_dwr, argparse.map()),
+    "!swrc": argparse.validate(handle_swrc, argparse.parse_map_num),
+    "!dwrc": argparse.validate(handle_dwrc, argparse.parse_map_num),
+    "!swrb": argparse.validate(handle_swrb, argparse.parse_map_num),
+    "!dwrb": argparse.validate(handle_dwrb, argparse.parse_map_num),
+    "!stime": argparse.validate(handle_stime, argparse.parse_map_num),
+    "!dtime": argparse.validate(handle_dtime, argparse.parse_map_num),
+    "!p": argparse.validate(handle_p, argparse.any()),
 }
 
 Object.assign(module.exports, {

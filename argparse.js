@@ -52,6 +52,14 @@ function parse_map_num(args) {
     }
 }
 
+function validate(f, format) {
+    return (args) => {
+        let formatted = format(args);
+        if (!formatted) return;
+        return f(formatted);
+    }
+}
+
 Object.assign(module.exports, {
     range,
     map,
@@ -59,4 +67,5 @@ Object.assign(module.exports, {
     any,
     parse_args,
     parse_map_num,
+    validate,
 });
