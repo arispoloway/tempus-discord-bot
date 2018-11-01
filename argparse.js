@@ -6,22 +6,13 @@ function range(min, max) {
     }
 }
 
-function map() {
-    return (m) => {
-        let name = utils.parse_map_name(m);
-        if (name) return name;
-    }
+function map(args) {
+    let name = utils.parse_map_name(args[0]);
+    if (name) return [name];
 }
 
-function c() {
-    return (c) => {
-        if (c.toLowerCase() === 's') return 'soldier';
-        if (c.toLowerCase() === 'd') return 'demoman';
-    }
-}
-
-function any() {
-    return (x) => x;
+function not_empty(args) {
+    if (args != []) return args;
 }
 
 function parse_args(args) {
@@ -39,33 +30,32 @@ function parse_args(args) {
     }
 }
 
-function parse_map_num(args) {
-    let p = parse_args(args, map(), range(1, 9999));
-    let p2 = parse_args(args, range(1, 9999), map());
+function map_num(args) {
+    let p = parse_args(args, utils.parse_map_name, range(1, 9999));
+    let p2 = parse_args(args, range(1, 9999), utils.parse_map_name);
     if (!p && !p2) {
         return undefined;
     }
     if (p) {
-        return {map: p[0], num: p[1]}
+        return [p[0], p[1]];
     } else {
-        return {map: p2[1], num: p2[0]}
+        return [p2[1], p2[0]];
     }
 }
 
 function validate(f, format) {
-    return (args) => {
+    return async (args) => {
         let formatted = format(args);
         if (!formatted) return;
-        return f(formatted);
+        return await f.apply(null, formatted);
     }
 }
 
 Object.assign(module.exports, {
     range,
     map,
-    c,
-    any,
+    not_empty,
     parse_args,
-    parse_map_num,
+    map_num,
     validate,
 });

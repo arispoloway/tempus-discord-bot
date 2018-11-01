@@ -3,19 +3,17 @@ const utils = require('./utils');
 const argparse = require('./argparse');
 
 
-async function handle_swr(args) {
-    var r = await tempus.mapWR(args, 's');
-    return utils.format_run(args, 's', r.duration, r.player.name);
+async function handle_swr(map) {
+    var r = await tempus.mapWR(map, 's');
+    return utils.format_run(map, 's', r.duration, r.player.name);
 }
 
-async function handle_dwr(args) {
-    var r = await tempus.mapWR(args, 'd');
-    return utils.format_run(args, 'd', r.duration, r.player.name);
+async function handle_dwr(map) {
+    var r = await tempus.mapWR(map, 'd');
+    return utils.format_run(map, 'd', r.duration, r.player.name);
 }
 
-async function handle_swrc(args) {
-    let {map, num} = args;
-
+async function handle_swrc(map, num) {
     try {
         var r = await tempus.courseWR(map, num, 's');
         return utils.format_run(map, 's', r.duration, r.player.name, 0, 0, num);
@@ -24,9 +22,7 @@ async function handle_swrc(args) {
     }
 }
 
-async function handle_dwrc(args) {
-    let {map, num} = args;
-
+async function handle_dwrc(map, num) {
     try {
         var r = await tempus.courseWR(map, num, 'd');
         return utils.format_run(map, 'd', r.duration, r.player.name, 0, 0, num);
@@ -35,9 +31,7 @@ async function handle_dwrc(args) {
     }
 }
 
-async function handle_swrb(args) {
-    let {map, num} = args;
-
+async function handle_swrb(map, num) {
     try {
         var r = await tempus.bonusWR(map, num, 's');
         return utils.format_run(map, 's', r.duration, r.player.name, 0, num);
@@ -46,9 +40,7 @@ async function handle_swrb(args) {
     }
 }
 
-async function handle_dwrb(args) {
-    let {map, num} = args;
-
+async function handle_dwrb(map, num) {
     try {
         var r = await tempus.bonusWR(map, num, 'd');
         return utils.format_run(map, 'd', r.duration, r.player.name, 0, num);
@@ -57,9 +49,7 @@ async function handle_dwrb(args) {
     }
 }
 
-async function handle_stime(args) {
-    let {map, num} = args;
-
+async function handle_stime(map, num) {
     try {
         var r = await tempus.mapTime(map, 's', num);
         return utils.format_run(map, 's', r.duration, r.player.name, num);
@@ -68,9 +58,7 @@ async function handle_stime(args) {
     }
 }
 
-async function handle_dtime(args) {
-    let {map, num} = args;
-
+async function handle_dtime(map, num) {
     try {
         var r = await tempus.mapTime(map, 'd', num);
         return utils.format_run(map, 'd', r.duration, r.player.name, num);
@@ -79,9 +67,9 @@ async function handle_dtime(args) {
     }
 }
 
-async function handle_p(args) {
+async function handle_p(p) {
     try {
-        var r = await tempus.searchPlayer(args[0]);
+        var r = await tempus.searchPlayer(p);
         let player = await r.toPlayerStats();
 
         let msg = ("\n" + player.name + "\n" + 
@@ -105,25 +93,29 @@ async function handle_message(message) {
     var handler;
     handler = handlers[content.split(" ")[0]];
     if (handler != undefined) {
-        let r = await handler(content.split(" ").slice(1, 9));
-        if (!r) {
-            utils.send(message, "Invalid arguments");
-        } else {
-            utils.send(message, r);
+        try{
+            let r = await handler(content.split(" ").slice(1, 9));
+            if (!r) {
+                utils.send(message, "Invalid arguments");
+            } else {
+                utils.send(message, r);
+            }
+        } catch (e) {
+            utils.send(message, "An error occurred");
         }
     }
 }
 
 const handlers = {
-    "!swr": argparse.validate(handle_swr, argparse.map()),
-    "!dwr": argparse.validate(handle_dwr, argparse.map()),
-    "!swrc": argparse.validate(handle_swrc, argparse.parse_map_num),
-    "!dwrc": argparse.validate(handle_dwrc, argparse.parse_map_num),
-    "!swrb": argparse.validate(handle_swrb, argparse.parse_map_num),
-    "!dwrb": argparse.validate(handle_dwrb, argparse.parse_map_num),
-    "!stime": argparse.validate(handle_stime, argparse.parse_map_num),
-    "!dtime": argparse.validate(handle_dtime, argparse.parse_map_num),
-    "!p": argparse.validate(handle_p, argparse.any()),
+    "!swr": argparse.validate(handle_swr, argparse.map),
+    "!dwr": argparse.validate(handle_dwr, argparse.map),
+    "!swrc": argparse.validate(handle_swrc, argparse.map_num),
+    "!dwrc": argparse.validate(handle_dwrc, argparse.map_num),
+    "!swrb": argparse.validate(handle_swrb, argparse.map_num),
+    "!dwrb": argparse.validate(handle_dwrb, argparse.map_num),
+    "!stime": argparse.validate(handle_stime, argparse.map_num),
+    "!dtime": argparse.validate(handle_dtime, argparse.map_num),
+    "!p": argparse.validate(handle_p, argparse.not_empty),
 }
 
 Object.assign(module.exports, {
