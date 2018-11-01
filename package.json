@@ -1,10 +1,23 @@
 {
-        "name":"tempus-discord-bot",
-        "main":"./bot.js",
-        "dependencies":{
-                "request":"^2.75.0",
-                "cheerio":"^0.22.0",
-                "discord.js":"^10.0.1",
-                "steam-server-status":"^1.0.2"
-        }
+  "name": "tempus-discord-bot",
+  "version": "1.0.0",
+  "description": "The source code for a discord bot that recognizes commands from the TF2 Tempus Jump Network.",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arispoloway/tempus-discord-bot.git"
+  },
+  "author": "Aris Poloway",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/arispoloway/tempus-discord-bot/issues"
+  },
+  "homepage": "https://github.com/arispoloway/tempus-discord-bot#readme",
+  "dependencies": {
+    "discord.js": "^11.4.2",
+    "tempus-api": "0.0.2"
+  }
 }
