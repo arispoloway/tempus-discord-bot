@@ -52,6 +52,24 @@ function parse_map_name(text) {
     }
 }
 
+// format can be letter, lower, cap, upper, short
+function parse_class(c, format) {
+    if (['soldier', 's', 'solly'].indexOf(c.toLowerCase()) > -1) {
+        if (format === 'letter') return 's';
+        if (format === 'lower') return 'soldier';
+        if (format === 'upper') return 'SOLDIER';
+        if (format === 'cap') return 'Soldier';
+        if (format === 'short') return 'solly';
+    }
+     if (['demoman', 'd', 'demo'].indexOf(c.toLowerCase()) > -1) {
+        if (format === 'letter') return 'd';
+        if (format === 'lower') return 'demoman';
+        if (format === 'upper') return 'DEMOMAN';
+        if (format === 'cap') return 'Demoman';
+        if (format === 'short') return 'demo';
+    }
+}
+
 
 async function update_maps() {
     let r = await tempus.detailedMapList();
@@ -64,4 +82,5 @@ Object.assign(module.exports, {
     format_multi_record_listing,
     update_maps,
     parse_map_name,
+    parse_class,
 });

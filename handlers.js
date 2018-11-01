@@ -67,6 +67,51 @@ async function handle_dtime(map, num) {
     }
 }
 
+async function handle_srank(player, num) {
+    return await rank('s', player, num);
+}
+
+async function handle_drank(player, num) {
+    return await rank('d', player, num);
+}
+
+async function handle_rank(player, num) {
+    return await rank('o', player, num);
+}
+
+async function rank(c, player, num) {
+    try {
+        var search;
+        if (player) {
+            search = await tempus.searchPlayer(player);
+        } else {
+            search = await tempus.getRank(c, num);
+        }
+        let p = await search.toPlayerStats();
+        var rank;
+        var points;
+        if (c === 's') {
+            rank = p.class_rank_info.soldier.rank;
+            points = p.class_rank_info.soldier.points;
+        }
+        if (c === 'd') {
+            rank = p.class_rank_info.demoman.rank;
+            points = p.class_rank_info.demoman.points;
+        }
+        if (c === 'o') {
+            rank = p.rank_info.rank;
+            points = p.rank_info.points;
+        }
+
+        var cl = utils.parse_class(c, "cap");
+        cl = (cl ? cl + " " : "");
+
+        return "\n" + p.name + "\nRank " + rank + " " + cl + ":: " + points + " Points";
+    } catch (e) {
+        return "Invalid argument";
+    }
+}
+
 async function handle_p(p) {
     try {
         var r = await tempus.searchPlayer(p);
@@ -115,6 +160,9 @@ const handlers = {
     "!stime": argparse.validate(handle_stime, argparse.map_num),
     "!dtime": argparse.validate(handle_dtime, argparse.map_num),
     "!p": argparse.validate(handle_p, argparse.not_empty),
+    "!srank": argparse.validate(handle_srank, argparse.player_or_num),
+    "!drank": argparse.validate(handle_drank, argparse.player_or_num),
+    "!rank": argparse.validate(handle_rank, argparse.player_or_num),
 }
 
 Object.assign(module.exports, {

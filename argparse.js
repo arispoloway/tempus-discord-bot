@@ -43,6 +43,19 @@ function map_num(args) {
     }
 }
 
+function player_or_num(args) {
+    let p = parse_args(args, range(1, 99999));
+    let p2 = parse_args(args, (x) => x);
+    if (!p && !p2) {
+        return undefined;
+    }
+    if (p) {
+        return [undefined, p[0]];
+    } else {
+        return [p2[0], undefined];
+    }
+}
+
 function validate(f, format) {
     return async (args) => {
         let formatted = format(args);
@@ -57,5 +70,6 @@ Object.assign(module.exports, {
     not_empty,
     parse_args,
     map_num,
+    player_or_num,
     validate,
 });
