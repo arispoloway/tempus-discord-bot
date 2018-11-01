@@ -12,7 +12,7 @@ function map(args) {
 }
 
 function not_empty(args) {
-    if (args != []) return args;
+    if (args.length) return args;
 }
 
 function parse_args(args) {
