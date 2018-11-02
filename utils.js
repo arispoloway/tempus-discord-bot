@@ -1,6 +1,12 @@
 const tempus = require('tempus-api');
+const SteamID = require('steamid');
 
 var maps = [];
+
+
+function profile_url(player) {
+    return "http://steamcommunity.com/profiles/" + (new SteamID(player.steamid)).getSteamID64();
+}
 
 function parse_map_name(text, all_info=false) {
     for (var i = 0; i < maps.length; i++) {
@@ -45,4 +51,5 @@ Object.assign(module.exports, {
     update_maps,
     parse_map_name,
     parse_class,
+    profile_url,
 });

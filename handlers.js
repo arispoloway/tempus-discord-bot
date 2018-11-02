@@ -6,18 +6,18 @@ const format = require('./format');
 
 async function handle_swr(map) {
     var r = await tempus.mapWR(map, 's');
-    return format.format_run(map, 's', r.duration, r.player.name);
+    return format.format_run(map, 's', r.duration, r.player);
 }
 
 async function handle_dwr(map) {
     var r = await tempus.mapWR(map, 'd');
-    return format.format_run(map, 'd', r.duration, r.player.name);
+    return format.format_run(map, 'd', r.duration, r.player);
 }
 
 async function handle_swrc(map, num) {
     try {
         var r = await tempus.courseWR(map, num, 's');
-        return format.format_run(map, 's', r.duration, r.player.name, 0, 0, num);
+        return format.format_run(map, 's', r.duration, r.player, 0, 0, num);
     } catch (e) {
         return format.format_error("Invalid Course Number");
     }
@@ -26,7 +26,7 @@ async function handle_swrc(map, num) {
 async function handle_dwrc(map, num) {
     try {
         var r = await tempus.courseWR(map, num, 'd');
-        return format.format_run(map, 'd', r.duration, r.player.name, 0, 0, num);
+        return format.format_run(map, 'd', r.duration, r.player, 0, 0, num);
     } catch (e) {
         return format.format_error("Invalid Course Number");
     }
@@ -35,7 +35,7 @@ async function handle_dwrc(map, num) {
 async function handle_swrb(map, num) {
     try {
         var r = await tempus.bonusWR(map, num, 's');
-        return format.format_run(map, 's', r.duration, r.player.name, 0, num);
+        return format.format_run(map, 's', r.duration, r.player, 0, num);
     } catch (e) {
         return format.format_error("Invalid Bonus Number");
     }
@@ -44,7 +44,7 @@ async function handle_swrb(map, num) {
 async function handle_dwrb(map, num) {
     try {
         var r = await tempus.bonusWR(map, num, 'd');
-        return format.format_run(map, 'd', r.duration, r.player.name, 0, num);
+        return format.format_run(map, 'd', r.duration, r.player, 0, num);
     } catch (e) {
         return format.format_error("Invalid Bonus Number");
     }
@@ -53,7 +53,7 @@ async function handle_dwrb(map, num) {
 async function handle_stime(map, num) {
     try {
         var r = await tempus.mapTime(map, 's', num);
-        return format.format_run(map, 's', r.duration, r.player.name, num);
+        return format.format_run(map, 's', r.duration, r.player, num);
     } catch (e) {
         return format.format_error("Invalid Run Number");
     }
@@ -62,10 +62,20 @@ async function handle_stime(map, num) {
 async function handle_dtime(map, num) {
     try {
         var r = await tempus.mapTime(map, 'd', num);
-        return format.format_run(map, 'd', r.duration, r.player.name, num);
+        return format.format_run(map, 'd', r.duration, r.player, num);
     } catch (e) {
         return format.format_error("Invalid Run Number");
     }
+}
+
+async function handle_sdem(map) {
+    var r = await (await tempus.mapWR(map, 's')).toRecordOverview();
+    return format.format_demo(r, map, 's', r.duration, r.player);
+}
+
+async function handle_ddem(map) {
+    var r = await (await tempus.mapWR(map, 'd')).toRecordOverview();
+    return format.format_demo(r, map, 'd', r.duration, r.player);
 }
 
 async function handle_srank(player, num) {
@@ -107,7 +117,7 @@ async function rank(c, player, num) {
         var cl = utils.parse_class(c, "cap");
         cl = (cl ? cl + " " : "");
 
-        return format.format_rank(p.name, rank, cl, points);
+        return format.format_rank(p, rank, cl, points);
     } catch (e) {
         return format.format_error("Invalid argument");
     }
@@ -125,22 +135,22 @@ async function handle_p(p) {
 }
 
 async function handle_rr() {
-    return await rr('map_wrs');
+    return await rr('map_wrs', "Recent Map WRs");
 }
 async function handle_rrb() {
-    return await rr('bonus_wrs');
+    return await rr('bonus_wrs', "Recent Bonus WRs");
 }
 async function handle_rrc() {
-    return await rr('course_wrs');
+    return await rr('course_wrs', "Recent Course WRs");
 }
 async function handle_rrtt() {
-    return await rr('map_tops');
+    return await rr('map_tops', "Recent TTs");
 }
 
-async function rr(type) {
+async function rr(type, title) {
     let r = await tempus.getActivity();
     let records = r[type];
-    return format.format_multi_record_listing(records.slice(0, 6), true)
+    return format.format_multi_record_listing(title, records.slice(0, 6), true)
 }
 
 async function handle_m(map) {
@@ -158,7 +168,10 @@ async function handle_si(args) {
     if (matching.length == 0) return format.format_error("No matching servers");
 
     return format.format_servers(matching);
+}
 
+async function handle_help() {
+    return format.format_help();
 }
 
 
@@ -188,6 +201,8 @@ const handlers = {
     "!dwrb": argparse.validate(handle_dwrb, argparse.map_num),
     "!stime": argparse.validate(handle_stime, argparse.map_num),
     "!dtime": argparse.validate(handle_dtime, argparse.map_num),
+    "!sdem": argparse.validate(handle_sdem, argparse.map),
+    "!ddem": argparse.validate(handle_ddem, argparse.map),
     "!p": argparse.validate(handle_p, argparse.not_empty),
     "!srank": argparse.validate(handle_srank, argparse.player_or_num),
     "!drank": argparse.validate(handle_drank, argparse.player_or_num),
@@ -198,6 +213,7 @@ const handlers = {
     "!rrtt": handle_rrtt,
     "!m": argparse.validate(handle_m, argparse.map),
     "!si": handle_si,
+    "!tempushelp": handle_help,
 }
 
 Object.assign(module.exports, {
