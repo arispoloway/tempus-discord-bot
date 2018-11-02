@@ -134,23 +134,30 @@ async function handle_p(p) {
     }
 }
 
-async function handle_rr() {
-    return await rr('map_wrs', "Recent Map WRs");
+async function handle_rr(arg) {
+    return await rr('map_wrs', "Recent Map WRs", arg);
 }
-async function handle_rrb() {
-    return await rr('bonus_wrs', "Recent Bonus WRs");
+async function handle_rrb(arg) {
+    return await rr('bonus_wrs', "Recent Bonus WRs", arg);
 }
-async function handle_rrc() {
-    return await rr('course_wrs', "Recent Course WRs");
+async function handle_rrc(arg) {
+    return await rr('course_wrs', "Recent Course WRs", arg);
 }
-async function handle_rrtt() {
-    return await rr('map_tops', "Recent TTs");
+async function handle_rrtt(arg) {
+    return await rr('map_tops', "Recent TTs", arg);
 }
 
-async function rr(type, title) {
+async function rr(type, title, arg) {
+    let parsed = parseInt(arg);
+    var page = 1;
+    let PAGE_STEP = 6;
+    if (parsed){
+        if (parsed <= 0 || parsed > 4) return format.format_error("Invalid page number");
+        page = parsed;
+    }
     let r = await tempus.getActivity();
     let records = r[type];
-    return format.format_multi_record_listing(title, records.slice(0, 6), true)
+    return format.format_multi_record_listing(title, records.slice(PAGE_STEP*(page-1), PAGE_STEP*page), true)
 }
 
 async function handle_m(map) {
