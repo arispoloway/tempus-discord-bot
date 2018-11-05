@@ -17,7 +17,7 @@ function discord_send(msg) {
 const client = new Discord.Client();
 
 client.on('ready', () => {
-    client.user.setActivity("Type !tempushelp for info", {type: "ETC."});
+    client.user.setActivity("Type !tempushelp for info", {type: "PLAYING"});
     console.log("Ready");
 });
 
