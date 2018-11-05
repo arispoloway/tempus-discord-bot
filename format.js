@@ -5,7 +5,12 @@ const ERROR_COLOR = "RED";
 const STANDARD_COLOR = "GREEN";
 
 function format_profile(player) {
-    return "[" + player.name + "](" + utils.profile_url(player) + ")";
+    return "[" + escape(player.name) + "](" + utils.profile_url(player) + ")";
+}
+
+function escape(text) {
+    return text.replace("*", "\\*").replace("_", "\\_").replace("~", "\~");
+
 }
 
 function process_time(t) {
@@ -49,7 +54,7 @@ function format_player(player) {
 
 function format_map(m) {
     const embed = new_embed();
-    embed.setTitle(m.name + "  |  "+ (m.authors.length == 1 ? m.authors[0].name : "Multiple Authors"));
+    embed.setTitle(escape(m.name) + "  |  "+ (m.authors.length == 1 ? escape(m.authors[0].name) : "Multiple Authors"));
     var desc = "";
     desc += "Soldier - T" + m.tiers.soldier + (m.svid ? " - [Video](" + m.svid.getRealUrl() + ")\n" : "\n");
     desc += "Demoman - T" + m.tiers.demoman + (m.dvid ? " - [Video](" + m.dvid.getRealUrl() + ")\n" : "\n");
@@ -59,7 +64,7 @@ function format_map(m) {
 
 function format_server(s) {
     g = s.game_info;
-    return g.currentMap + " (" + g.playerCount + "/" + g.maxPlayers + ")" + " | " + s.shortname + " | " + s.name + "\nsteam://connect/" + s.addr + "";
+    return escape(g.currentMap) + " (" + g.playerCount + "/" + g.maxPlayers + ")" + " | " + s.shortname + " | " + s.name + "\nsteam://connect/" + s.addr + "";
 }
 
 function format_servers(servers) {
@@ -78,7 +83,7 @@ function format_rank(player, rank, cl, points) {
 }
 
 function run(map, c, t, player, rank, bonus, course) {
-    return map + " " +
+    return escape(map) + " " +
         (bonus ? "B" + String(bonus) + " " : "") +
         (course ? "C" + String(course) + " " : "") +
         "(" + ((c === 's') ? "S" : "D") + (rank && rank != 1 ? " #" + rank : " WR") + ") | " + process_time(t) + " | " + format_profile(player);
