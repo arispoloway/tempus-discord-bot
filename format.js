@@ -31,7 +31,6 @@ function process_time(t) {
 function new_embed() {
     const embed = new Discord.RichEmbed();
     embed.setColor(STANDARD_COLOR);
-    embed.setFooter("Type !tempushelp for more information");
     return embed;
 }
 
@@ -147,20 +146,19 @@ function format_help() {
         `
      let players = `
         !p <name> - Player Stats
-        !srank <name> - Player Soldier Rank
-        !drank <name> - Player Demoman Rank
-        !rank <name> - Player Overall Rank
-        !rank <name> - Player Overall Rank
+        !srank <name|num> - Player Soldier Rank
+        !drank <name|num> - Player Demoman Rank
+        !rank <name|num> - Player Overall Rank
     `;
     let demos = `
         !sdem <map> - Soldier WR .dem on <map>
         !ddem <map> - Demoman WR .dem on <map>
     `
     let rr = `
-        !rr - Recent Map WRs
-        !rrc - Recent Course WRs
-        !rrb - Recent Bonus WRs
-        !rrtt - Recent TTs
+        !rr <page(optional)> - Recent Map WRs
+        !rrc <page(optional)> - Recent Course WRs
+        !rrb <page(optional)> - Recent Bonus WRs
+        !rrtt <page(optional)> - Recent TTs
     `
     let maps = `
         !m <map> - Map Information
