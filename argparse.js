@@ -15,12 +15,12 @@ function not_empty(args) {
     if (args.length) return args;
 }
 
-function parse_args(args) {
+function parse_args(args, ...format) {
     try {
-        if (args.length != (arguments.length - 1)) return;
+        if (args.length != (format.length)) return;
         let r = [];
         for (let i = 0; i < args.length; i++){
-            let x = arguments[i+1](args[i]);
+            let x = format[i](args[i]);
             if (!x) return;
             r.push(x);
         }
