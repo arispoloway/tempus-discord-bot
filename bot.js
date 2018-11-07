@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const settings = require("./settings.js");
 const handlers = require('./handlers');
 const utils = require('./utils');
+const fs = require('fs');
 
 
 utils.update_maps();
@@ -11,6 +12,13 @@ setInterval(utils.update_maps, update_interval);
 function discord_send(msg) {
     return (reply) => {
         msg.channel.send(reply);
+
+        if (settings.logging) {
+            fs.appendFile(settings.logging, 
+                `${new Date().getTime()}` + 
+                `|${msg.author.username}|${msg.author.id}|${msg.content}|${msg.guild ? msg.guild.name : undefined}|${msg.channel.name}\n`,
+                () => {});
+        }
     }
 }
 
