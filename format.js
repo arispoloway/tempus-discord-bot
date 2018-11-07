@@ -55,15 +55,15 @@ function format_map(m) {
     const embed = new_embed();
     embed.setTitle(escape(m.name) + "  |  "+ (m.authors.length == 1 ? escape(m.authors[0].name) : "Multiple Authors"));
     var desc = "";
-    desc += "Soldier - T" + m.tiers.soldier + (m.svid ? " - [Video](" + m.svid.getRealUrl() + ")\n" : "\n");
-    desc += "Demoman - T" + m.tiers.demoman + (m.dvid ? " - [Video](" + m.dvid.getRealUrl() + ")\n" : "\n");
+    desc += `Soldier - T${m.tiers.soldier}${(m.svid ? ` - [Video](${m.svid.getRealUrl()})\n` : "\n")}`;
+    desc += `Demoman - T${m.tiers.soldier}${(m.dvid ? ` - [Video](${m.dvid.getRealUrl()})\n` : "\n")}`;
     embed.setDescription(desc);
     return embed;
 }
 
 function format_server(s) {
     g = s.game_info;
-    return escape(g.currentMap) + " (" + g.playerCount + "/" + g.maxPlayers + ")" + " | " + s.shortname + " | " + s.name + "\nsteam://connect/" + s.addr + "";
+    return escape(`${g.currentMap} (${g.playerCount}/${g.maxPlayers}) | ${s.shortname} | ${s.name} \nsteam://connect/${s.addr}`);
 }
 
 function format_servers(servers) {
@@ -77,7 +77,7 @@ function format_rank(player, rank, cl, points) {
     const embed = new_embed();
     embed.setTitle(player.name)
     embed.setURL(utils.profile_url(player));
-    embed.setDescription("Rank " + rank + " " + cl + " | " + points + " Points");
+    embed.setDescription(`Rank ${rank} ${cl} | ${points} Points`);
     return embed;
 }
 
