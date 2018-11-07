@@ -4,90 +4,46 @@ const argparse = require('./argparse');
 const format = require('./format');
 
 
-async function handle_swr(map) {
-    var r = await tempus.mapWR(map, 's');
-    return format.format_run(map, 's', r.duration, r.player);
+function both_classes(f) {
+    return [async (...args) => await f.apply(null, ['s'].concat(args)),
+        async (...args) => await f.apply(null, ['d'].concat(args))]
 }
 
-async function handle_dwr(map) {
-    var r = await tempus.mapWR(map, 'd');
-    return format.format_run(map, 'd', r.duration, r.player);
+async function wr(c, map) {
+    var r = await tempus.mapWR(map, c);
+    return format.format_run(map, c, r.duration, r.player);
 }
 
-async function handle_swrc(map, num) {
+async function wrc(c, map, num) {
     try {
-        var r = await tempus.courseWR(map, num, 's');
-        return format.format_run(map, 's', r.duration, r.player, 0, 0, num);
+        var r = await tempus.courseWR(map, num, c);
+        return format.format_run(map, c, r.duration, r.player, 0, 0, num);
     } catch (e) {
         return format.format_error("Invalid Course Number");
     }
 }
 
-async function handle_dwrc(map, num) {
+async function wrb(c, map, num) {
     try {
-        var r = await tempus.courseWR(map, num, 'd');
-        return format.format_run(map, 'd', r.duration, r.player, 0, 0, num);
-    } catch (e) {
-        return format.format_error("Invalid Course Number");
-    }
-}
-
-async function handle_swrb(map, num) {
-    try {
-        var r = await tempus.bonusWR(map, num, 's');
-        return format.format_run(map, 's', r.duration, r.player, 0, num);
+        var r = await tempus.bonusWR(map, num, c);
+        return format.format_run(map, c, r.duration, r.player, 0, num);
     } catch (e) {
         return format.format_error("Invalid Bonus Number");
     }
 }
 
-async function handle_dwrb(map, num) {
+async function time(c, map, num) {
     try {
-        var r = await tempus.bonusWR(map, num, 'd');
-        return format.format_run(map, 'd', r.duration, r.player, 0, num);
-    } catch (e) {
-        return format.format_error("Invalid Bonus Number");
-    }
-}
-
-async function handle_stime(map, num) {
-    try {
-        var r = await tempus.mapTime(map, 's', num);
-        return format.format_run(map, 's', r.duration, r.player, num);
+        var r = await tempus.mapTime(map, c, num);
+        return format.format_run(map, c, r.duration, r.player, num);
     } catch (e) {
         return format.format_error("Invalid Run Number");
     }
 }
 
-async function handle_dtime(map, num) {
-    try {
-        var r = await tempus.mapTime(map, 'd', num);
-        return format.format_run(map, 'd', r.duration, r.player, num);
-    } catch (e) {
-        return format.format_error("Invalid Run Number");
-    }
-}
-
-async function handle_sdem(map) {
-    var r = await (await tempus.mapWR(map, 's')).toRecordOverview();
-    return format.format_demo(r, map, 's', r.duration, r.player);
-}
-
-async function handle_ddem(map) {
-    var r = await (await tempus.mapWR(map, 'd')).toRecordOverview();
-    return format.format_demo(r, map, 'd', r.duration, r.player);
-}
-
-async function handle_srank(player, num) {
-    return await rank('s', player, num);
-}
-
-async function handle_drank(player, num) {
-    return await rank('d', player, num);
-}
-
-async function handle_rank(player, num) {
-    return await rank('o', player, num);
+async function dem(c, map) {
+    var r = await (await tempus.mapWR(map, c)).toRecordOverview();
+    return format.format_demo(r, map, c, r.duration, r.player);
 }
 
 async function rank(c, player, num) {
@@ -123,6 +79,31 @@ async function rank(c, player, num) {
     }
 }
 
+async function rr(type, title, arg) {
+    let parsed = parseInt(arg);
+    var page = 1;
+    let PAGE_STEP = 6;
+    if (parsed){
+        if (parsed <= 0 || parsed > 4) return format.format_error("Invalid page number");
+        page = parsed;
+    }
+    let r = await tempus.getActivity();
+    let records = r[type];
+    return format.format_multi_record_listing(title, records.slice(PAGE_STEP*(page-1), PAGE_STEP*page), true)
+}
+
+let [handle_swr, handle_dwr] = both_classes(wr);
+let [handle_swrc, handle_dwrc] = both_classes(wrc);
+let [handle_swrb, handle_dwrb] = both_classes(wrb);
+let [handle_stime, handle_dtime] = both_classes(time);
+let [handle_sdem, handle_ddem] = both_classes(dem);
+let [handle_srank, handle_drank] = both_classes(rank);
+
+
+async function handle_rank(player, num) {
+    return await rank('o', player, num);
+}
+
 async function handle_p(p) {
     try {
         var r = await tempus.searchPlayer(p);
@@ -145,19 +126,6 @@ async function handle_rrc(arg) {
 }
 async function handle_rrtt(arg) {
     return await rr('map_tops', "Recent TTs", arg);
-}
-
-async function rr(type, title, arg) {
-    let parsed = parseInt(arg);
-    var page = 1;
-    let PAGE_STEP = 6;
-    if (parsed){
-        if (parsed <= 0 || parsed > 4) return format.format_error("Invalid page number");
-        page = parsed;
-    }
-    let r = await tempus.getActivity();
-    let records = r[type];
-    return format.format_multi_record_listing(title, records.slice(PAGE_STEP*(page-1), PAGE_STEP*page), true)
 }
 
 async function handle_m(map) {
