@@ -3,6 +3,7 @@ const settings = require("./settings.js");
 const handlers = require('./handlers');
 const utils = require('./utils');
 const fs = require('fs');
+const path = require('path');
 
 
 utils.update_maps();
@@ -14,7 +15,7 @@ function discord_send(msg) {
         msg.channel.send(reply);
 
         if (settings.logging) {
-            fs.appendFile(settings.logging, 
+            fs.appendFile(path.resolve(__dirname, settings.logging), 
                 `${new Date().getTime()}` + 
                 `|${msg.author.username}|${msg.author.id}|${msg.content}|${msg.guild ? msg.guild.name : undefined}|${msg.channel.name}\n`,
                 () => {});
