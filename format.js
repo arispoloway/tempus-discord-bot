@@ -53,7 +53,7 @@ function format_player(player) {
 
 function format_map(m) {
     const embed = new_embed();
-    embed.setTitle(escape(m.name) + "  |  "+ (m.authors.length == 1 ? escape(m.authors[0].name) : "Multiple Authors"));
+    embed.setTitle(m.name + " | "+ (m.authors.length == 1 ? escape(m.authors[0].name) : "Multiple Authors"));
     var desc = "";
     desc += `Soldier - T${m.tiers.soldier}${(m.svid ? ` - [Video](${m.svid.getRealUrl()})\n` : "\n")}`;
     desc += `Demoman - T${m.tiers.soldier}${(m.dvid ? ` - [Video](${m.dvid.getRealUrl()})\n` : "\n")}`;
