@@ -5,6 +5,8 @@ const utils = require('./utils');
 const fs = require('fs');
 const path = require('path');
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 
 utils.update_maps();
 update_interval = 1000 * 60 * 60 * 6 // every 6 hours
