@@ -115,20 +115,27 @@ let [handle_srank, handle_drank] = both_classes(rank);
 
 async function handle_online() {
     let servers = await tempus.serverList();
-    let players = [];
+    let player_promises = [];
     for (let s of servers) {
         if (!s.game_info) continue;
         for (let p of s.game_info.players) {
             if (!p.id || p.id == null) continue;
-            let player = await p.toPlayerStats();
-            player.server = s;
-            players.push(player);
+            player_promises.push(
+                p.toPlayerStats()
+                    .then((player) => { 
+                        player.server = s;
+                        return player;
+                    })
+            );
         }
     }
-    if (players.length == 0) {
-        return format.format_error("No players online");
-    }
-    return format.format_online(players);
+    return await Promise.all(player_promises)
+        .then((players) => {
+            if (players.length == 0) {
+                return format.format_error("No players online");
+            }
+            return format.format_online(players);
+        });
 }
 
 async function handle_rank(player, num) {
@@ -186,11 +193,13 @@ async function handle_message(reply, content) {
     handler = handlers[content.split(" ")[0]];
     if (handler != undefined) {
         try{
-            var args = [content.split(" ").slice(1, 9)];
+            let r;
             if (handler.name == reply_wait().name) {
-                args = [reply, args[0]];
+                r = await handler(reply, content.split(" ").slice(1, 9));
             }
-            let r = await handler(...args);
+            else {
+                r = await handler(content.split(" ").slice(1, 9));
+            }
             if (!r) {
                 reply(format.format_error("Invalid arguments"));
             } else {
