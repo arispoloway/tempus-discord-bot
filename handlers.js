@@ -99,6 +99,23 @@ let [handle_stime, handle_dtime] = both_classes(time);
 let [handle_sdem, handle_ddem] = both_classes(dem);
 let [handle_srank, handle_drank] = both_classes(rank);
 
+async function handle_online() {
+    let servers = await tempus.serverList();
+    let players = [];
+    for (let s of servers) {
+        if (!s.game_info) continue;
+        for (let p of s.game_info.players) {
+            if (!p.id || p.id == null) continue;
+            let player = await p.toPlayerStats();
+            player.server = s;
+            players.push(player);
+        }
+    }
+    if (players.length == 0) {
+        return format.format_error("No players online");
+    }
+    return format.format_online(players);
+}
 
 async function handle_rank(player, num) {
     return await rank('o', player, num);
@@ -178,6 +195,7 @@ const handlers = {
     "!dtime": argparse.validate(handle_dtime, argparse.map_num),
     "!sdem": argparse.validate(handle_sdem, argparse.map),
     "!ddem": argparse.validate(handle_ddem, argparse.map),
+    "!online": handle_online,
     "!p": argparse.validate(handle_p, argparse.not_empty),
     "!srank": argparse.validate(handle_srank, argparse.player_or_num),
     "!drank": argparse.validate(handle_drank, argparse.player_or_num),
