@@ -63,9 +63,7 @@ function format_map(m) {
 
 function format_online(players) {
     players.sort((a, b) => {
-        if (a.rank_info.rank < b.rank_info.rank) return -1;
-        if (a.rank_info.rank > b.rank_info.rank) return 1;
-        return 0;
+        return a.rank_info.rank - b.rank_info.rank;
     });
     const embed = new_embed();
     embed.setTitle("Top Online Players");

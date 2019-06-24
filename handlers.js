@@ -79,10 +79,8 @@ async function rank(c, player, num) {
     }
 }
 
-function reply_wait(f)
-{
-    return async function slow_function(reply, args)
-    {
+function reply_wait(f) {
+    return async function slow_function(reply, args) {
         var msg = await reply(format.format_wait());
         try {
             var result = await f.apply(args);
