@@ -201,6 +201,13 @@ function format_help() {
     return embed;
 }
 
+function format_wait() { 
+    const embed = new_embed();
+    embed.setTitle("Gathering information, please wait...");
+    embed.setTimestamp(Date.now());
+    return embed;
+}
+
 
 module.exports = {
     process_time,
@@ -215,4 +222,5 @@ module.exports = {
     format_error,
     format_help,
     format_demo,
+    format_wait,
 }

@@ -79,6 +79,22 @@ async function rank(c, player, num) {
     }
 }
 
+function reply_wait(f)
+{
+    return async function slow_function(reply, args)
+    {
+        var msg = await reply(format.format_wait());
+        try {
+            var result = await f.apply(args);
+            if (msg && msg.deletable) msg.delete();
+        } catch (e) {
+            if (msg && msg.deletable) msg.delete();
+        }
+        
+        return result;
+    };
+}
+
 async function rr(type, title, arg) {
     let parsed = parseInt(arg);
     var page = 1;
@@ -172,7 +188,11 @@ async function handle_message(reply, content) {
     handler = handlers[content.split(" ")[0]];
     if (handler != undefined) {
         try{
-            let r = await handler(content.split(" ").slice(1, 9));
+            var args = [content.split(" ").slice(1, 9)];
+            if (handler.name == reply_wait().name) {
+                args = [reply, args[0]];
+            }
+            let r = await handler(...args);
             if (!r) {
                 reply(format.format_error("Invalid arguments"));
             } else {
@@ -195,7 +215,7 @@ const handlers = {
     "!dtime": argparse.validate(handle_dtime, argparse.map_num),
     "!sdem": argparse.validate(handle_sdem, argparse.map),
     "!ddem": argparse.validate(handle_ddem, argparse.map),
-    "!online": handle_online,
+    "!online": reply_wait(handle_online),
     "!p": argparse.validate(handle_p, argparse.not_empty),
     "!srank": argparse.validate(handle_srank, argparse.player_or_num),
     "!drank": argparse.validate(handle_drank, argparse.player_or_num),

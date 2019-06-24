@@ -14,14 +14,14 @@ setInterval(utils.update_maps, update_interval);
 
 function discord_send(msg) {
     return (reply) => {
-        msg.channel.send(reply);
-
         if (settings.logging) {
             fs.appendFile(path.resolve(__dirname, settings.logging), 
                 `${new Date().getTime()}` + 
                 `|${msg.author.username}|${msg.author.id}|${msg.content}|${msg.guild ? msg.guild.name : undefined}|${msg.channel.name}\n`,
                 () => {});
         }
+
+        return msg.channel.send(reply);
     }
 }
 
