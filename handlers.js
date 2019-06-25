@@ -80,16 +80,10 @@ async function rank(c, player, num) {
 }
 
 function reply_wait(f) {
-    return async function slow_function(reply, args) {
+    return async function slow_function(args, reply) {
         var msg = await reply(format.format_wait());
-        try {
-            var result = await f.apply(args);
-            if (msg && msg.deletable) msg.delete();
-        } catch (e) {
-            if (msg && msg.deletable) msg.delete();
-        }
-        
-        return result;
+        var result = await f.apply(args);
+        return [result, msg];
     };
 }
 
@@ -191,17 +185,11 @@ async function handle_message(reply, content) {
     handler = handlers[content.split(" ")[0]];
     if (handler != undefined) {
         try{
-            let r;
-            if (handler.name == reply_wait().name) {
-                r = await handler(reply, content.split(" ").slice(1, 9));
-            }
-            else {
-                r = await handler(content.split(" ").slice(1, 9));
-            }
+            let r = await handler(content.split(" ").slice(1, 9), reply);
             if (!r) {
                 reply(format.format_error("Invalid arguments"));
             } else {
-                reply(r);
+                reply(...typeof r[Symbol.iterator] == "function" ? r : [r]);
             }
         } catch (e) {
             reply(format.format_error("An error occurred"));

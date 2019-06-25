@@ -13,7 +13,7 @@ update_interval = 1000 * 60 * 60 * 6 // every 6 hours
 setInterval(utils.update_maps, update_interval);
 
 function discord_send(msg) {
-    return (reply) => {
+    return (reply, previous = null) => {
         if (settings.logging) {
             fs.appendFile(path.resolve(__dirname, settings.logging), 
                 `${new Date().getTime()}` + 
@@ -21,7 +21,7 @@ function discord_send(msg) {
                 () => {});
         }
 
-        return msg.channel.send(reply);
+        return previous ? previous.edit(reply) : msg.channel.send(reply);
     }
 }
 
