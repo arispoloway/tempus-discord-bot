@@ -115,20 +115,18 @@ let [handle_srank, handle_drank] = both_classes(rank);
 
 async function handle_online() {
     let servers = await tempus.serverList();
-    let player_promises = [];
-    for (let s of servers) {
-        if (!s.game_info) continue;
-        for (let p of s.game_info.players) {
-            if (!p.id || p.id == null) continue;
-            player_promises.push(
-                p.toPlayerStats()
-                    .then((player) => { 
-                        player.server = s;
-                        return player;
-                    })
-            );
-        }
-    }
+    let player_promises = servers
+        .filter(s => s.game_info)
+        .map(s => s.game_info.players
+            .filter(p => p.id)
+            .map(p => p.toPlayerStats().then(player => {
+                    player.server = s;
+                    return player;
+                })
+            )
+        )
+        .reduce((prev, next) => prev.concat(next));
+
     return await Promise.all(player_promises)
         .then((players) => {
             if (players.length == 0) {
