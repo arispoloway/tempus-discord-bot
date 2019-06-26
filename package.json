@@ -19,6 +19,6 @@
   "dependencies": {
     "discord.js": "^11.4.2",
     "steamid": "^1.1.0",
-    "tempus-api": "0.0.7"
+    "tempus-api": "0.0.9"
   }
 }
