@@ -23,7 +23,7 @@ function discord_send(msg) {
 
         if (previous && !previous.deleted) { 
             if (previous.editable) return previous.edit(reply);
-            if (previous.deletable) return msg.channel.send.reply().then(previous.delete());
+            if (previous.deletable) previous.delete();
         }
         return msg.channel.send(reply);
     }

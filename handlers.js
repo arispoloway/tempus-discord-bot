@@ -121,13 +121,11 @@ async function handle_online() {
         )
         .reduce((prev, next) => prev.concat(next));
 
-    return await Promise.all(player_promises)
-        .then((players) => {
-            if (players.length == 0) {
-                return format.format_error("No players online");
-            }
-            return format.format_online(players);
-        });
+    let players = await Promise.all(player_promises);
+    if (players.length == 0) {
+        return format.format_error("No players online");
+    }
+    return format.format_online(players);
 }
 
 async function handle_rank(player, num) {
@@ -189,6 +187,8 @@ async function handle_message(reply, content) {
             if (!r) {
                 reply(format.format_error("Invalid arguments"));
             } else {
+                // handlers wrapped with reply_wait() will return an array
+                // containing the result as well as a temporary message for editing.
                 reply(...typeof r[Symbol.iterator] == "function" ? r : [r]);
             }
         } catch (e) {
