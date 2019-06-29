@@ -13,15 +13,19 @@ update_interval = 1000 * 60 * 60 * 6 // every 6 hours
 setInterval(utils.update_maps, update_interval);
 
 function discord_send(msg) {
-    return (reply) => {
-        msg.channel.send(reply);
-
+    return (reply, previous = null) => {
         if (settings.logging) {
             fs.appendFile(path.resolve(__dirname, settings.logging), 
                 `${new Date().getTime()}` + 
                 `|${msg.author.username}|${msg.author.id}|${msg.content}|${msg.guild ? msg.guild.name : undefined}|${msg.channel.name}\n`,
                 () => {});
         }
+
+        if (previous && !previous.deleted) { 
+            if (previous.editable) return previous.edit(reply);
+            if (previous.deletable) previous.delete();
+        }
+        return msg.channel.send(reply);
     }
 }
 

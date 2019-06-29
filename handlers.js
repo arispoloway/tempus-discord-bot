@@ -79,6 +79,14 @@ async function rank(c, player, num) {
     }
 }
 
+function reply_wait(f) {
+    return async function slow_function(args, reply) {
+        var msg = await reply(format.format_wait());
+        var result = await f.apply(args);
+        return [result, msg];
+    };
+}
+
 async function rr(type, title, arg) {
     let parsed = parseInt(arg);
     var page = 1;
@@ -99,6 +107,26 @@ let [handle_stime, handle_dtime] = both_classes(time);
 let [handle_sdem, handle_ddem] = both_classes(dem);
 let [handle_srank, handle_drank] = both_classes(rank);
 
+async function handle_online() {
+    let servers = await tempus.serverList();
+    let player_promises = servers
+        .filter(s => s.game_info)
+        .map(s => s.game_info.players
+            .filter(p => p.id)
+            .map(p => p.toPlayerStats().then(player => {
+                    player.server = s;
+                    return player;
+                })
+            )
+        )
+        .reduce((prev, next) => prev.concat(next));
+
+    let players = await Promise.all(player_promises);
+    if (players.length == 0) {
+        return format.format_error("No players online");
+    }
+    return format.format_online(players);
+}
 
 async function handle_rank(player, num) {
     return await rank('o', player, num);
@@ -155,11 +183,13 @@ async function handle_message(reply, content) {
     handler = handlers[content.split(" ")[0]];
     if (handler != undefined) {
         try{
-            let r = await handler(content.split(" ").slice(1, 9));
+            let r = await handler(content.split(" ").slice(1, 9), reply);
             if (!r) {
                 reply(format.format_error("Invalid arguments"));
             } else {
-                reply(r);
+                // handlers wrapped with reply_wait() will return an array
+                // containing the result as well as a temporary message for editing.
+                reply(...typeof r[Symbol.iterator] == "function" ? r : [r]);
             }
         } catch (e) {
             reply(format.format_error("An error occurred"));
@@ -178,6 +208,7 @@ const handlers = {
     "!dtime": argparse.validate(handle_dtime, argparse.map_num),
     "!sdem": argparse.validate(handle_sdem, argparse.map),
     "!ddem": argparse.validate(handle_ddem, argparse.map),
+    "!online": reply_wait(handle_online),
     "!p": argparse.validate(handle_p, argparse.not_empty),
     "!srank": argparse.validate(handle_srank, argparse.player_or_num),
     "!drank": argparse.validate(handle_drank, argparse.player_or_num),

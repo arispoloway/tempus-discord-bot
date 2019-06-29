@@ -61,6 +61,27 @@ function format_map(m) {
     return embed;
 }
 
+function format_online(players) {
+    players.sort((a, b) => {
+        return a.rank_info.rank - b.rank_info.rank;
+    });
+    const embed = new_embed();
+    embed.setTitle("Top Online Players");
+    var desc = "";
+    var count = players.length > 6 ? 6 : players.length;
+    for (var i = 0; i < count; i++) {
+        if (i != 0) { 
+            desc += "\n";
+        }
+        p = players[i];
+        s = p.server;
+        g = s.game_info;
+        desc += `Rank ${p.rank_info.rank} | [${escape(p.name)}](${utils.profile_url(p)}) on [${g.currentMap}](https://tempus.xyz/maps/${g.currentMap}) ([${s.shortname}](https://tempus.xyz/servers/${s.id}))`;
+    }
+    embed.setDescription(desc);
+    return embed;
+}
+
 function format_server(s) {
     g = s.game_info;
     return escape(`${g.currentMap} (${g.playerCount}/${g.maxPlayers}) | ${s.shortname} | ${s.name} \nsteam://connect/${s.addr}`);
@@ -145,6 +166,7 @@ function format_help() {
         !dtime <map|num> <num|map> - Demoman Time <num> on <map>
         `
      let players = `
+        !online - Online Players
         !p <name> - Player Stats
         !srank <name|num> - Player Soldier Rank
         !drank <name|num> - Player Demoman Rank
@@ -177,6 +199,13 @@ function format_help() {
     return embed;
 }
 
+function format_wait() { 
+    const embed = new_embed();
+    embed.setTitle("Gathering information, please wait...");
+    embed.setTimestamp(Date.now());
+    return embed;
+}
+
 
 module.exports = {
     process_time,
@@ -186,8 +215,10 @@ module.exports = {
     format_rank,
     format_player,
     format_map,
+    format_online,
     format_servers,
     format_error,
     format_help,
     format_demo,
+    format_wait,
 }
