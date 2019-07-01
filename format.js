@@ -10,7 +10,6 @@ function format_profile(player) {
 
 function escape(text) {
     return text.replace("*", "\\*").replace("_", "\\_").replace("~", "\~");
-
 }
 
 function process_time(t) {
@@ -38,7 +37,7 @@ function format_player(player) {
     const embed = new_embed();
     embed.setURL(utils.profile_url(player));
     embed.setTitle(player.name);
-    var desc = "";
+    let desc = "";
     desc += "Rank " + player.class_rank_info.soldier.rank + " Soldier - " + player.class_rank_info.soldier.points + " Points\n"
     desc += "Rank " + player.class_rank_info.demoman.rank + " Demoman - " + player.class_rank_info.demoman.points + " Points\n";
     if (player.wr_stats.map) desc += ("-", "Map WRs: " + player.wr_stats.map.count + "\n");
@@ -54,7 +53,7 @@ function format_player(player) {
 function format_map(m) {
     const embed = new_embed();
     embed.setTitle(m.name + " | "+ (m.authors.length === 1 ? escape(m.authors[0].name) : "Multiple Authors"));
-    var desc = "";
+    let desc = "";
     desc += `Soldier - T${m.tiers.soldier}${(m.svid ? ` - [Video](${m.svid.getRealUrl()})\n` : "\n")}`;
     desc += `Demoman - T${m.tiers.soldier}${(m.dvid ? ` - [Video](${m.dvid.getRealUrl()})\n` : "\n")}`;
     embed.setDescription(desc);
@@ -73,9 +72,9 @@ function format_online(players) {
         if (i !== 0) {
             desc += "\n";
         }
-        p = players[i];
-        s = p.server;
-        g = s.game_info;
+        let p = players[i];
+        let s = p.server;
+        let g = s.game_info;
         desc += `Rank ${p.rank_info.rank} | [${escape(p.name)}](${utils.profile_url(p)}) on [${g.currentMap}](https://tempus.xyz/maps/${g.currentMap}) ([${s.shortname}](https://tempus.xyz/servers/${s.id}))`;
     }
     embed.setDescription(desc);
@@ -83,7 +82,7 @@ function format_online(players) {
 }
 
 function format_server(s) {
-    g = s.game_info;
+    let g = s.game_info;
     return escape(`${g.currentMap} (${g.playerCount}/${g.maxPlayers}) | ${s.shortname} | ${s.name} \nsteam://connect/${s.addr}`);
 }
 
@@ -137,8 +136,8 @@ function format_multi_record_listing(title, listing, list_time) {
     embed.setTitle(title);
 
     let mapped = listing.map((r) => (
-        run(r.map.name, (r.class == 3 ? 's' : 'd'), r.duration, r.player, r.rank, 
-        r.zone_info.type=='bonus' && r.zone_info.zoneindex, r.zone_info.type=='course' && r.zone_info.zoneindex) +
+        run(r.map.name, (r.class === 3 ? 's' : 'd'), r.duration, r.player, r.rank,
+        r.zone_info.type === 'bonus' && r.zone_info.zoneindex, r.zone_info.type === 'course' && r.zone_info.zoneindex) +
         (list_time ? " | " + process_time(new Date().getTime() / 1000 - r.date) + " ago" : ""))
     ).join("\n");
     embed.setDescription(mapped);
@@ -164,7 +163,7 @@ function format_help() {
         !dwrb <map|bonus> <bonus|map> - Demoman Bonus WR
         !stime <map|num> <num|map> - Soldier Time <num> on <map>
         !dtime <map|num> <num|map> - Demoman Time <num> on <map>
-        `
+    `;
      let players = `
         !online - Online Players
         !p <name> - Player Stats
@@ -175,19 +174,19 @@ function format_help() {
     let demos = `
         !sdem <map> - Soldier WR .dem on <map>
         !ddem <map> - Demoman WR .dem on <map>
-    `
+    `;
     let rr = `
         !rr <page(optional)> - Recent Map WRs
         !rrc <page(optional)> - Recent Course WRs
         !rrb <page(optional)> - Recent Bonus WRs
         !rrtt <page(optional)> - Recent TTs
-    `
+    `;
     let maps = `
         !m <map> - Map Information
-    `
+    `;
     let servers = `
         !si <query> - Server Listing matching <query>
-    `
+    `;
     embed.addField("Records", records);
     embed.addField("Players", players);
     embed.addField("Demos", demos);

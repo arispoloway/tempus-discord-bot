@@ -9,6 +9,15 @@ function both_classes(f) {
         async (...args) => await f.apply(null, ['d'].concat(args))]
 }
 
+// Wraps a long running function with some logic that enables sending and editing a temporary message
+function reply_wait(f) {
+    return async function slow_function(args, reply) {
+        let msg = await reply(format.format_wait());
+        let result = await f.apply(args);
+        return [result, msg];
+    };
+}
+
 async function wr(c, map) {
     let r = await tempus.mapWR(map, c);
     return format.format_run(map, c, r.duration, r.player);
@@ -77,14 +86,6 @@ async function rank(c, player, num) {
     } catch (e) {
         return format.format_error("Invalid argument");
     }
-}
-
-function reply_wait(f) {
-    return async function slow_function(args, reply) {
-        let msg = await reply(format.format_wait());
-        let result = await f.apply(args);
-        return [result, msg];
-    };
 }
 
 async function rr(type, title, arg) {
@@ -178,12 +179,10 @@ async function handle_help() {
     return format.format_help();
 }
 
-
 async function handle_message(reply, content) {
-    let handler;
-    handler = handlers[content.split(" ")[0]];
+    let handler = handlers[content.split(" ")[0]];
     if (handler !== undefined) {
-        try{
+        try {
             let r = await handler(content.split(" ").slice(1, 9), reply);
             if (!r) {
                 reply(format.format_error("Invalid arguments"));
@@ -221,7 +220,7 @@ const handlers = {
     "!m": argparse.validate(handle_m, argparse.map),
     "!si": handle_si,
     "!tempushelp": handle_help,
-}
+};
 
 Object.assign(module.exports, {
     handle_message
