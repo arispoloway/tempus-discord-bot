@@ -11,8 +11,8 @@ function both_classes(f) {
 
 // Wraps a long running function with some logic that enables sending and editing a temporary message
 function reply_wait(f) {
-    return async function slow_function(args, reply) {
-        let msg = await reply(format.format_wait());
+    return async function slow_function(args, reply_function) {
+        let msg = await reply_function(format.format_wait());
         let result = await f.apply(args);
         return [result, msg];
     };
@@ -179,20 +179,20 @@ async function handle_help() {
     return format.format_help();
 }
 
-async function handle_message(reply, content) {
+async function handle_message(reply_function, content) {
     let handler = handlers[content.split(" ")[0]];
     if (handler !== undefined) {
         try {
-            let r = await handler(content.split(" ").slice(1, 9), reply);
+            let r = await handler(content.split(" ").slice(1, 9), reply_function);
             if (!r) {
-                reply(format.format_error("Invalid arguments"));
+                reply_function(format.format_error("Invalid arguments"));
             } else {
                 // handlers wrapped with reply_wait() will return an array
                 // containing the result as well as a temporary message for editing.
-                reply(...typeof r[Symbol.iterator] == "function" ? r : [r]);
+                reply_function(...typeof r[Symbol.iterator] == "function" ? r : [r]);
             }
         } catch (e) {
-            reply(format.format_error("An error occurred"));
+            reply_function(format.format_error("An error occurred"));
         }
     }
 }
