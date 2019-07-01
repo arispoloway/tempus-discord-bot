@@ -10,13 +10,13 @@ function both_classes(f) {
 }
 
 async function wr(c, map) {
-    var r = await tempus.mapWR(map, c);
+    let r = await tempus.mapWR(map, c);
     return format.format_run(map, c, r.duration, r.player);
 }
 
 async function wrc(c, map, num) {
     try {
-        var r = await tempus.courseWR(map, num, c);
+        let r = await tempus.courseWR(map, num, c);
         return format.format_run(map, c, r.duration, r.player, 0, 0, num);
     } catch (e) {
         return format.format_error("Invalid Course Number");
@@ -25,7 +25,7 @@ async function wrc(c, map, num) {
 
 async function wrb(c, map, num) {
     try {
-        var r = await tempus.bonusWR(map, num, c);
+        let r = await tempus.bonusWR(map, num, c);
         return format.format_run(map, c, r.duration, r.player, 0, num);
     } catch (e) {
         return format.format_error("Invalid Bonus Number");
@@ -34,7 +34,7 @@ async function wrb(c, map, num) {
 
 async function time(c, map, num) {
     try {
-        var r = await tempus.mapTime(map, c, num);
+        let r = await tempus.mapTime(map, c, num);
         return format.format_run(map, c, r.duration, r.player, num);
     } catch (e) {
         return format.format_error("Invalid Run Number");
@@ -42,21 +42,21 @@ async function time(c, map, num) {
 }
 
 async function dem(c, map) {
-    var r = await (await tempus.mapWR(map, c)).toRecordOverview();
+    let r = await (await tempus.mapWR(map, c)).toRecordOverview();
     return format.format_demo(r, map, c, r.duration, r.player);
 }
 
 async function rank(c, player, num) {
     try {
-        var search;
+        let search;
         if (player) {
             search = await tempus.searchPlayer(player);
         } else {
             search = await tempus.getRank(c, num);
         }
         let p = await search.toPlayerStats();
-        var rank;
-        var points;
+        let rank;
+        let points;
         if (c === 's') {
             rank = p.class_rank_info.soldier.rank;
             points = p.class_rank_info.soldier.points;
@@ -70,7 +70,7 @@ async function rank(c, player, num) {
             points = p.rank_info.points;
         }
 
-        var cl = utils.parse_class(c, "cap");
+        let cl = utils.parse_class(c, "cap");
         cl = (cl ? cl + " " : "");
 
         return format.format_rank(p, rank, cl, points);
@@ -81,15 +81,15 @@ async function rank(c, player, num) {
 
 function reply_wait(f) {
     return async function slow_function(args, reply) {
-        var msg = await reply(format.format_wait());
-        var result = await f.apply(args);
+        let msg = await reply(format.format_wait());
+        let result = await f.apply(args);
         return [result, msg];
     };
 }
 
 async function rr(type, title, arg) {
     let parsed = parseInt(arg);
-    var page = 1;
+    let page = 1;
     let PAGE_STEP = 6;
     if (parsed){
         if (parsed <= 0 || parsed > 4) return format.format_error("Invalid page number");
@@ -113,16 +113,17 @@ async function handle_online() {
         .filter(s => s.game_info)
         .map(s => s.game_info.players
             .filter(p => p.id)
-            .map(p => p.toPlayerStats().then(player => {
+            .map(async p => {
+                    let player = await p.toPlayerStats();
                     player.server = s;
                     return player;
-                })
+                }
             )
         )
         .reduce((prev, next) => prev.concat(next));
 
     let players = await Promise.all(player_promises);
-    if (players.length == 0) {
+    if (players.length === 0) {
         return format.format_error("No players online");
     }
     return format.format_online(players);
@@ -134,7 +135,7 @@ async function handle_rank(player, num) {
 
 async function handle_p(p) {
     try {
-        var r = await tempus.searchPlayer(p);
+        const r = await tempus.searchPlayer(p);
         let player = await r.toPlayerStats();
 
         return format.format_player(player);
@@ -168,7 +169,7 @@ async function handle_si(args) {
         if (!s.game_info) return false;
         return (s.country + s.shortname + s.name + s.game_info.currentMap + s.game_info.nextMap).toLowerCase().includes(query.toLowerCase())
     });
-    if (matching.length == 0) return format.format_error("No matching servers");
+    if (matching.length === 0) return format.format_error("No matching servers");
 
     return format.format_servers(matching);
 }
@@ -179,9 +180,9 @@ async function handle_help() {
 
 
 async function handle_message(reply, content) {
-    var handler;
+    let handler;
     handler = handlers[content.split(" ")[0]];
-    if (handler != undefined) {
+    if (handler !== undefined) {
         try{
             let r = await handler(content.split(" ").slice(1, 9), reply);
             if (!r) {

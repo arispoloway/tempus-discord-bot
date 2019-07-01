@@ -53,7 +53,7 @@ function format_player(player) {
 
 function format_map(m) {
     const embed = new_embed();
-    embed.setTitle(m.name + " | "+ (m.authors.length == 1 ? escape(m.authors[0].name) : "Multiple Authors"));
+    embed.setTitle(m.name + " | "+ (m.authors.length === 1 ? escape(m.authors[0].name) : "Multiple Authors"));
     var desc = "";
     desc += `Soldier - T${m.tiers.soldier}${(m.svid ? ` - [Video](${m.svid.getRealUrl()})\n` : "\n")}`;
     desc += `Demoman - T${m.tiers.soldier}${(m.dvid ? ` - [Video](${m.dvid.getRealUrl()})\n` : "\n")}`;
@@ -67,10 +67,10 @@ function format_online(players) {
     });
     const embed = new_embed();
     embed.setTitle("Top Online Players");
-    var desc = "";
-    var count = players.length > 6 ? 6 : players.length;
-    for (var i = 0; i < count; i++) {
-        if (i != 0) { 
+    let desc = "";
+    let count = players.length > 6 ? 6 : players.length;
+    for (let i = 0; i < count; i++) {
+        if (i !== 0) {
             desc += "\n";
         }
         p = players[i];
