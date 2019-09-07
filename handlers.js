@@ -6,7 +6,7 @@ const format = require('./format');
 
 function both_classes(f) {
     return [async (...args) => await f.apply(null, ['s'].concat(args)),
-        async (...args) => await f.apply(null, ['d'].concat(args))]
+            async (...args) => await f.apply(null, ['d'].concat(args))];
 }
 
 // Wraps a long running function with some logic that enables sending and editing a temporary message
@@ -168,7 +168,7 @@ async function handle_si(args) {
     let servers = await tempus.serverList();
     let matching = servers.filter((s) => {
         if (!s.game_info) return false;
-        return (s.country + s.shortname + s.name + s.game_info.currentMap + s.game_info.nextMap).toLowerCase().includes(query.toLowerCase())
+        return (s.country + s.shortname + s.name + s.game_info.currentMap + s.game_info.nextMap).toLowerCase().includes(query.toLowerCase());
     });
     if (matching.length === 0) return format.format_error("No matching servers");
 

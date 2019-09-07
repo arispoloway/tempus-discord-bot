@@ -2,3 +2,4 @@ settings.js
 .vscode
 node_modules
 *.log
+log.txt
