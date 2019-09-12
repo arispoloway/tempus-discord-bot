@@ -15,7 +15,7 @@ async function initialize_tables() {
 
 async function monitor_run(map, c, meta, channel) {
     const db = await dbPromise;
-    await db.run("INSERT OR IGNORE INTO monitored_runs VALUES (?, ?, ?, ?)", [map, c, meta, channel]);
+    await db.run(SQL`INSERT OR IGNORE INTO monitored_runs VALUES (${map}, ${c}, ${meta}, ${channel})`);
 }
 
 function parse_meta(run) {
@@ -24,7 +24,7 @@ function parse_meta(run) {
 }
 
 async function matching_monitors(run) {
-    let query = SQL`SELECT * FROM monitored_runs WHERE map=${run.map.name} AND class=${run.class} `;
+    let query = SQL`SELECT * FROM monitored_runs WHERE map=${run.map.name} AND class=${run.class}`;
 
     const db = await dbPromise;
     const matching = await db.all(query);

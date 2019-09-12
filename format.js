@@ -218,7 +218,7 @@ function format_info(info) {
 
 function format_monitor(map, c, meta) {
     const embed = new_embed();
-    embed.setDescription("Started monitoring " + (3 === 3 ? 's' : 'd') + " runs on " + map + " " + meta + " in this channel");
+    embed.setDescription("Started monitoring " + (3 === c ? 's' : 'd') + " runs on " + map + " " + meta + " in this channel");
     return embed;
 }
 

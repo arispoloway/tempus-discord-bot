@@ -48,7 +48,11 @@ async function check_new_runs() {
         const monitors = await database.matching_monitors(run);
 
         await Promise.all(monitors.map(async (monitor) => {
-            await message_monitor(run, monitor);
+            try {
+                await message_monitor(run, monitor);
+            } catch (e) {
+                console.error(e);
+            }
         }));
     }));
 }
