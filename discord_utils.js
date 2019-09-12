@@ -10,6 +10,7 @@ function register_client(c) {
 
 function send_message(channel, message) {
     let target = client.channels.get(channel);
+    // DMs aren't visible as channels on first load until you get a message
     if (!target) target = client.users.get(channel);
     if (!target) return;
     target.send(message);

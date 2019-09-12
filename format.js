@@ -181,6 +181,10 @@ function format_help() {
         !rrb <page(optional)> - Recent Bonus WRs
         !rrtt <page(optional)> - Recent TTs
     `;
+    let monitor = `
+        !monitor <map> <class> <[c/b]#(optional)> - Monitor WR runs in this channel (admin)
+        !monitor_clear - clear runs monitored here (admin)
+    `;
     let maps = `
         !m <map> - Map Information
     `;
@@ -191,10 +195,11 @@ function format_help() {
     embed.addField("Players", players);
     embed.addField("Demos", demos);
     embed.addField("Recent Records", rr);
+    embed.addField("Monitored Records", monitor);
     embed.addField("Maps", maps);
     embed.addField("Servers", servers);
 
-    embed.setFooter("PM nolem#4220 with bugs/questions")
+    embed.setFooter("PM nolem#4220 with bugs/questions");
     return embed;
 }
 
@@ -205,9 +210,15 @@ function format_wait() {
     return embed;
 }
 
+function format_info(info) {
+    const embed = new_embed();
+    embed.setDescription(info);
+    return embed;
+}
+
 function format_monitor(map, c, meta) {
     const embed = new_embed();
-    embed.setDescription("Started monitoring" + map + c + meta + " in this channel");
+    embed.setDescription("Started monitoring " + (3 === 3 ? 's' : 'd') + " runs on " + map + " " + meta + " in this channel");
     return embed;
 }
 
@@ -228,4 +239,5 @@ module.exports = {
     format_demo,
     format_wait,
     format_monitor,
+    format_info,
 }

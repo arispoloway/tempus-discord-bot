@@ -162,14 +162,35 @@ async function handle_rrtt(arg) {
     return await rr('map_tops', "Recent TTs", arg);
 }
 
-async function handle_monitor(map, _, msg) {
+async function handle_monitor(map, c, meta, _, msg) {
     // Works around silly bug where DMs are not listed on start
     // Treat user ids as channels, compensate for this in discord_utils#send_message
     let channel_id = msg.channel.id;
-    if (msg.channel.type === "dm") channel_id = msg.author.id;
 
-    await monitor.monitor_run(map, 3, null, channel_id);
-    return format.format_monitor(map, 3, null);
+    if (msg.channel.type === "dm") {
+        channel_id = msg.author.id;   
+    } else if (!msg.member.hasPermission("ADMINISTRATOR")) {
+        return format.format_error("Only an administrator can do that here");
+    }
+
+    await monitor.monitor_run(map, c, meta, channel_id);
+    return format.format_monitor(map, c, meta);
+}
+
+async function handle_monitor_clear(_, msg) {
+    // TODO absrtact this admin stuff out 
+    // Works around silly bug where DMs are not listed on start
+    // Treat user ids as channels, compensate for this in discord_utils#send_message
+    let channel_id = msg.channel.id;
+
+    if (msg.channel.type === "dm") {
+        channel_id = msg.author.id;   
+    } else if (!msg.member.hasPermission("ADMINISTRATOR")) {
+        return format.format_error("Only an administrator can do that here");
+    }
+
+    await monitor.clear_channel(channel_id);
+    return format.format_info("All monitored runs cleared");
 }
 
 async function handle_m(map) {
@@ -229,7 +250,8 @@ const handlers = {
     "!drank": argparse.validate(handle_drank, argparse.player_or_num),
     "!rank": argparse.validate(handle_rank, argparse.player_or_num),
     "!rr": handle_rr,
-    "!monitor": argparse.validate(handle_monitor, argparse.map),
+    "!monitor": argparse.validate(handle_monitor, argparse.monitor),
+    "!monitor_clear": argparse.validate(handle_monitor_clear, argparse.none),
     "!rrb": handle_rrb,
     "!rrc": handle_rrc,
     "!rrtt": handle_rrtt,

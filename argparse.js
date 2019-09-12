@@ -11,6 +11,10 @@ function map(args) {
     if (name) return [name];
 }
 
+function none(args) {
+    if (!args.length) return [];
+}
+
 function not_empty(args) {
     if (args.length) return args;
 }
@@ -28,6 +32,23 @@ function parse_args(args, ...format) {
     } catch (e) {
         console.log(e);
     }
+}
+
+function class_num(args) {
+    if (['s', 'solly', 'soldier'].includes((args[0] || "").toLowerCase())) return [3];
+    if (['d', 'demo', 'demoman'].includes((args[0] || "").toLowerCase())) return [4];
+} 
+
+function monitor(args) {
+    let map = utils.parse_map_name(args[0]);
+    let c = class_num([args[1]]);
+    let meta = args.slice(2).join("").toLowerCase();
+
+    if (!map || !c) return;
+    if (meta && !["c", "b"].includes(meta[0])) return;
+    if (meta && parseInt(meta.slice(1)) === NaN) return;
+
+    return [map, c[0], meta];
 }
 
 function map_num(args) {
@@ -72,4 +93,6 @@ Object.assign(module.exports, {
     map_num,
     player_or_num,
     validate,
+    monitor,
+    none,
 });

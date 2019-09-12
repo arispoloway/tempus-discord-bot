@@ -11,6 +11,11 @@ async function monitor_run(map, c, meta, channel) {
     await database.monitor_run(map, c, meta, channel);
 }
 
+async function clear_channel(channel) {
+    await database.clear_channel(channel);
+}
+
+
 async function message_monitor(run, monitor) {
     let bonus, course = 0;
     if (monitor.meta) {
@@ -31,7 +36,7 @@ async function check_new_runs() {
     }).flat().flat();
 
     if (!last_refresh) {
-        last_refresh = Math.max(...all_runs.map((r) => r.date)) - 30000;
+        last_refresh = Math.max(...all_runs.map((r) => r.date));
     }
 
     const runs = all_runs.filter((run) => {
@@ -51,5 +56,6 @@ async function check_new_runs() {
 Object.assign(module.exports, {
     check_new_runs,
     monitor_run,
+    clear_channel,
 });
 
