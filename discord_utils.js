@@ -2,8 +2,17 @@ const settings = require("./settings.js");
 const fs = require('fs');
 const path = require('path');
 
+let client;
+
+function register_client(c) {
+    if (!client) client = c;
+}
+
 function send_message(channel, message) {
-    channel.send(message);
+    let target = client.channels.get(channel);
+    if (!target) target = client.users.get(channel);
+    if (!target) return;
+    target.send(message);
 }
 
 function discord_send(msg) {
@@ -19,12 +28,13 @@ function discord_send(msg) {
             if (previous.editable) return previous.edit(reply);
             if (previous.deletable) previous.delete();
         }
-        return send_message(msg.channel, reply);
+        return msg.channel.send(reply);
     };
 }
 
 Object.assign(module.exports, {
     discord_send,
     send_message,
+    register_client,
 });
 

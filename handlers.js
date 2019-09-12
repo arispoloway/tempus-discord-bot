@@ -2,6 +2,7 @@ const tempus = require('tempus-api');
 const utils = require('./utils');
 const argparse = require('./argparse');
 const format = require('./format');
+const monitor = require('./monitor');
 
 
 function both_classes(f) {
@@ -98,7 +99,7 @@ async function rr(type, title, arg) {
     }
     let r = await tempus.getActivity();
     let records = r[type];
-    return format.format_multi_record_listing(title, records.slice(PAGE_STEP*(page-1), PAGE_STEP*page), true)
+    return format.format_multi_record_listing(title, records.slice(PAGE_STEP*(page-1), PAGE_STEP*page), true);
 }
 
 let [handle_swr, handle_dwr] = both_classes(wr);
@@ -148,14 +149,27 @@ async function handle_p(p) {
 async function handle_rr(arg) {
     return await rr('map_wrs', "Recent Map WRs", arg);
 }
+
 async function handle_rrb(arg) {
     return await rr('bonus_wrs', "Recent Bonus WRs", arg);
 }
+
 async function handle_rrc(arg) {
     return await rr('course_wrs', "Recent Course WRs", arg);
 }
+
 async function handle_rrtt(arg) {
     return await rr('map_tops', "Recent TTs", arg);
+}
+
+async function handle_monitor(map, _, msg) {
+    // Works around silly bug where DMs are not listed on start
+    // Treat user ids as channels, compensate for this in discord_utils#send_message
+    let channel_id = msg.channel.id;
+    if (msg.channel.type === "dm") channel_id = msg.author.id;
+
+    await monitor.monitor_run(map, 3, null, channel_id);
+    return format.format_monitor(map, 3, null);
 }
 
 async function handle_m(map) {
@@ -179,11 +193,11 @@ async function handle_help() {
     return format.format_help();
 }
 
-async function handle_message(reply_function, content) {
+async function handle_message(reply_function, content, msg) {
     let handler = handlers[content.split(" ")[0]];
     if (handler !== undefined) {
         try {
-            let r = await handler(content.split(" ").slice(1, 9), reply_function);
+            let r = await handler(content.split(" ").slice(1, 9), reply_function, msg);
             if (!r) {
                 reply_function(format.format_error("Invalid arguments"));
             } else {
@@ -192,6 +206,7 @@ async function handle_message(reply_function, content) {
                 reply_function(...typeof r[Symbol.iterator] == "function" ? r : [r]);
             }
         } catch (e) {
+            console.error(e);
             reply_function(format.format_error("An error occurred"));
         }
     }
@@ -214,6 +229,7 @@ const handlers = {
     "!drank": argparse.validate(handle_drank, argparse.player_or_num),
     "!rank": argparse.validate(handle_rank, argparse.player_or_num),
     "!rr": handle_rr,
+    "!monitor": argparse.validate(handle_monitor, argparse.map),
     "!rrb": handle_rrb,
     "!rrc": handle_rrc,
     "!rrtt": handle_rrtt,

@@ -57,10 +57,10 @@ function player_or_num(args) {
 }
 
 function validate(f, format) {
-    return async (args) => {
+    return async (args, reply_function, channel) => {
         let formatted = format(args);
         if (!formatted) return;
-        return await f.apply(null, formatted);
+        return await f.apply(null, formatted.concat([reply_function, channel]));
     }
 }
 

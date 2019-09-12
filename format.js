@@ -38,7 +38,7 @@ function format_player(player) {
     embed.setURL(utils.profile_url(player));
     embed.setTitle(player.name);
     let desc = "";
-    desc += "Rank " + player.class_rank_info.soldier.rank + " Soldier - " + player.class_rank_info.soldier.points + " Points\n"
+    desc += "Rank " + player.class_rank_info.soldier.rank + " Soldier - " + player.class_rank_info.soldier.points + " Points\n";
     desc += "Rank " + player.class_rank_info.demoman.rank + " Demoman - " + player.class_rank_info.demoman.points + " Points\n";
     if (player.wr_stats.map) desc += ("-", "Map WRs: " + player.wr_stats.map.count + "\n");
     if (player.wr_stats.course) desc += ("-", "Course WRs: " + player.wr_stats.course.count + "\n");
@@ -95,7 +95,7 @@ function format_servers(servers) {
 
 function format_rank(player, rank, cl, points) {
     const embed = new_embed();
-    embed.setTitle(player.name)
+    embed.setTitle(player.name);
     embed.setURL(utils.profile_url(player));
     embed.setDescription(`Rank ${rank} ${cl} | ${points} Points`);
     return embed;
@@ -205,6 +205,13 @@ function format_wait() {
     return embed;
 }
 
+function format_monitor(map, c, meta) {
+    const embed = new_embed();
+    embed.setDescription("Started monitoring" + map + c + meta + " in this channel");
+    return embed;
+}
+
+
 
 module.exports = {
     process_time,
@@ -220,4 +227,5 @@ module.exports = {
     format_help,
     format_demo,
     format_wait,
+    format_monitor,
 }
