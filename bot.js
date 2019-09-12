@@ -15,7 +15,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     setInterval(utils.update_maps, update_interval);
 
     await database.initialize_tables();
-    const monitor_refresh = 1000 * 60 * 5; // every 6 hours
+    const monitor_refresh = 1000 * 60 * 5; // every 5 minutes
     setInterval(monitor.check_new_runs, monitor_refresh);
 
 
