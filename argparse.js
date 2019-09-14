@@ -34,21 +34,16 @@ function parse_args(args, ...format) {
     }
 }
 
-function class_num(args) {
-    if (['s', 'solly', 'soldier'].includes((args[0] || "").toLowerCase())) return [3];
-    if (['d', 'demo', 'demoman'].includes((args[0] || "").toLowerCase())) return [4];
-} 
-
 function monitor(args) {
     let map = utils.parse_map_name(args[0]);
-    let c = class_num([args[1]]);
+    let c = utils.class_num(args[1]);
     let meta = args.slice(2).join("").toLowerCase();
 
     if (!map || !c) return;
     if (meta && !["c", "b"].includes(meta[0])) return;
     if (meta && parseInt(meta.slice(1)) === NaN) return;
 
-    return [map, c[0], meta];
+    return [map, c, meta];
 }
 
 function map_num(args) {
