@@ -11,6 +11,10 @@ function map(args) {
     if (name) return [name];
 }
 
+function none(args) {
+    if (!args.length) return [];
+}
+
 function not_empty(args) {
     if (args.length) return args;
 }
@@ -28,6 +32,18 @@ function parse_args(args, ...format) {
     } catch (e) {
         console.log(e);
     }
+}
+
+function monitor(args) {
+    let map = utils.parse_map_name(args[0]);
+    let c = utils.class_num(args[1]);
+    let meta = args.slice(2).join("").toLowerCase();
+
+    if (!map || !c) return;
+    if (meta && !["c", "b"].includes(meta[0])) return;
+    if (meta && parseInt(meta.slice(1)) === NaN) return;
+
+    return [map, c, meta];
 }
 
 function map_num(args) {
@@ -57,10 +73,10 @@ function player_or_num(args) {
 }
 
 function validate(f, format) {
-    return async (args) => {
+    return async (args, reply_function, channel) => {
         let formatted = format(args);
         if (!formatted) return;
-        return await f.apply(null, formatted);
+        return await f.apply(null, formatted.concat([reply_function, channel]));
     }
 }
 
@@ -72,4 +88,6 @@ Object.assign(module.exports, {
     map_num,
     player_or_num,
     validate,
+    monitor,
+    none,
 });

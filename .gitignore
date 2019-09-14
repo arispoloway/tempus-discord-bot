@@ -1,4 +1,6 @@
 settings.js
+*.sqlite
 .vscode
 node_modules
 *.log
+log.txt

@@ -18,6 +18,8 @@
   "homepage": "https://github.com/arispoloway/tempus-discord-bot#readme",
   "dependencies": {
     "discord.js": "^11.5.1",
+    "sql-template-strings": "^2.2.2",
+    "sqlite": "^3.0.3",
     "steamid": "^1.1.3",
     "tempus-api": "^0.0.10"
   }

@@ -2,11 +2,12 @@ const tempus = require('tempus-api');
 const utils = require('./utils');
 const argparse = require('./argparse');
 const format = require('./format');
+const monitor = require('./monitor');
 
 
 function both_classes(f) {
     return [async (...args) => await f.apply(null, ['s'].concat(args)),
-        async (...args) => await f.apply(null, ['d'].concat(args))]
+            async (...args) => await f.apply(null, ['d'].concat(args))];
 }
 
 // Wraps a long running function with some logic that enables sending and editing a temporary message
@@ -98,7 +99,7 @@ async function rr(type, title, arg) {
     }
     let r = await tempus.getActivity();
     let records = r[type];
-    return format.format_multi_record_listing(title, records.slice(PAGE_STEP*(page-1), PAGE_STEP*page), true)
+    return format.format_multi_record_listing(title, records.slice(PAGE_STEP*(page-1), PAGE_STEP*page), true);
 }
 
 let [handle_swr, handle_dwr] = both_classes(wr);
@@ -148,14 +149,48 @@ async function handle_p(p) {
 async function handle_rr(arg) {
     return await rr('map_wrs', "Recent Map WRs", arg);
 }
+
 async function handle_rrb(arg) {
     return await rr('bonus_wrs', "Recent Bonus WRs", arg);
 }
+
 async function handle_rrc(arg) {
     return await rr('course_wrs', "Recent Course WRs", arg);
 }
+
 async function handle_rrtt(arg) {
     return await rr('map_tops', "Recent TTs", arg);
+}
+
+async function handle_monitor(map, c, meta, _, msg) {
+    // Works around silly bug where DMs are not listed on start
+    // Treat user ids as channels, compensate for this in discord_utils#send_message
+    let channel_id = msg.channel.id;
+
+    if (msg.channel.type === "dm") {
+        channel_id = msg.author.id;   
+    } else if (!msg.member.hasPermission("ADMINISTRATOR")) {
+        return format.format_error("Only an administrator can do that here");
+    }
+
+    await monitor.monitor_run(map, c, meta, channel_id);
+    return format.format_monitor(map, c, meta);
+}
+
+async function handle_monitor_clear(_, msg) {
+    // TODO absrtact this admin stuff out 
+    // Works around silly bug where DMs are not listed on start
+    // Treat user ids as channels, compensate for this in discord_utils#send_message
+    let channel_id = msg.channel.id;
+
+    if (msg.channel.type === "dm") {
+        channel_id = msg.author.id;   
+    } else if (!msg.member.hasPermission("ADMINISTRATOR")) {
+        return format.format_error("Only an administrator can do that here");
+    }
+
+    await monitor.clear_channel(channel_id);
+    return format.format_info("All monitored runs cleared");
 }
 
 async function handle_m(map) {
@@ -168,7 +203,7 @@ async function handle_si(args) {
     let servers = await tempus.serverList();
     let matching = servers.filter((s) => {
         if (!s.game_info) return false;
-        return (s.country + s.shortname + s.name + s.game_info.currentMap + s.game_info.nextMap).toLowerCase().includes(query.toLowerCase())
+        return (s.country + s.shortname + s.name + s.game_info.currentMap + s.game_info.nextMap).toLowerCase().includes(query.toLowerCase());
     });
     if (matching.length === 0) return format.format_error("No matching servers");
 
@@ -179,11 +214,11 @@ async function handle_help() {
     return format.format_help();
 }
 
-async function handle_message(reply_function, content) {
+async function handle_message(reply_function, content, msg) {
     let handler = handlers[content.split(" ")[0]];
     if (handler !== undefined) {
         try {
-            let r = await handler(content.split(" ").slice(1, 9), reply_function);
+            let r = await handler(content.split(" ").slice(1, 9), reply_function, msg);
             if (!r) {
                 reply_function(format.format_error("Invalid arguments"));
             } else {
@@ -192,6 +227,7 @@ async function handle_message(reply_function, content) {
                 reply_function(...typeof r[Symbol.iterator] == "function" ? r : [r]);
             }
         } catch (e) {
+            console.error(e);
             reply_function(format.format_error("An error occurred"));
         }
     }
@@ -214,6 +250,8 @@ const handlers = {
     "!drank": argparse.validate(handle_drank, argparse.player_or_num),
     "!rank": argparse.validate(handle_rank, argparse.player_or_num),
     "!rr": handle_rr,
+    "!monitor": argparse.validate(handle_monitor, argparse.monitor),
+    "!monitor_clear": argparse.validate(handle_monitor_clear, argparse.none),
     "!rrb": handle_rrb,
     "!rrc": handle_rrc,
     "!rrtt": handle_rrtt,
