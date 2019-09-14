@@ -40,9 +40,9 @@ function parse_class(c, format) {
     }
 }
 
-function class_num(args) {
-    if (['s', 'solly', 'soldier'].includes((args[0] || "").toLowerCase())) return 3;
-    if (['d', 'demo', 'demoman'].includes((args[0] || "").toLowerCase())) return 4;
+function class_num(c) {
+    if (['s', 'solly', 'soldier'].includes((c || "").toLowerCase())) return 3;
+    if (['d', 'demo', 'demoman'].includes((c || "").toLowerCase())) return 4;
 } 
 
 
