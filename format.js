@@ -9,7 +9,7 @@ function format_profile(player) {
 }
 
 function escape(text) {
-    return text.replace("*", "\\*").replace("_", "\\_").replace("~", "\~");
+    return text.replace("*", "\\*").replace("_", "\\_").replace("~", "\\~").replace("|", "\\|").replace("`", "\\`");
 }
 
 function process_time(t) {
